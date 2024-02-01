@@ -4,11 +4,6 @@ export const vimeo = defineType({
   title: 'Vimeo Video',
   name: 'vimeo',
   type: 'object',
-  // components: {
-  //   input: (props) => {
-  //     console.log(config)
-  //   },
-  // },
   fields: [
     {
       type: 'object',

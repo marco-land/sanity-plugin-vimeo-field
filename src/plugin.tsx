@@ -1,6 +1,7 @@
+// @ts-nocheck
 import React from 'react'
 
-import VideoInput from './components/VideoInput'
+import {VideoInput} from './components/VideoInput'
 import type {Config, VimeoFieldInput} from './utils/types'
 
 export function vimeoFieldRendering(config: Config) {

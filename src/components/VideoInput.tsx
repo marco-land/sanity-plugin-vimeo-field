@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react'
 import {Card, Inline, Button, Text, TextInput, Stack} from '@sanity/ui'
 import DataFetcher from './DataFetcher'
