@@ -2,11 +2,8 @@
 
 Retrieve Vimeo video data via the API with an access token and store it in Sanity.
 
-<img src="https://github.com/marco-land/sanity-plugin-vimeo-field/assets/24410335/b1bd4b87-4575-4669-9ea8-a704806a9532" width="480" height="405" alt="Sanity Plugin Vimeo Field Preview" />
+<img src="https://github.com/marco-land/sanity-plugin-vimeo-field/assets/24410335/b1bd4b87-4575-4669-9ea8-a704806a9532" width="480" height="405" alt="Sanity Plugin Vimeo Field Preview" style="max-width: 100%; height: auto;" />
 
-## To Dos
-
-- [ ] Change to TS
 
 ## Installation
 
@@ -16,7 +13,7 @@ yarn install sanity-plugin-vimeo-field
 npm install sanity-plugin-vimeo-field
 ```
 
-⚠️ This is a **Sanity Studio** v3 plugin
+ℹ This is a **Sanity Studio** v3 plugin
 
 ## Configuration
 
