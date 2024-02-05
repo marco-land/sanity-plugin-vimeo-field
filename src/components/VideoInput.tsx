@@ -41,7 +41,7 @@ export const VideoInput = (config: Config, props: InputProps) => {
           </Stack>
           <Stack space={3}>
             <Text size={1} weight="semibold">
-              Thubmnail
+              Thumbnail
             </Text>
             <img
               src={value.pictures.sizes[0]?.link}
