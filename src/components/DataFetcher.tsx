@@ -5,10 +5,17 @@ import {SyncIcon} from '@sanity/icons'
 
 const DataFetcher = (props) => {
   // eslint-disable-next-line react/prop-types
-  const {accessToken, onSuccess} = props
+  const {accessToken, onSuccess, fields} = props
   const [vimeoId, setVimeoId] = useState('')
   const [isFetching, setIsFetching] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
+
+  let vimeoFields
+  let url = `https://api.vimeo.com/videos/${vimeoId}?fields=name,play,pictures,files`
+  if (fields?.length) {
+    vimeoFields = fields?.join(',')
+    url += `,${vimeoFields}`
+  }
 
   const handleChange = (event) => {
     setVimeoId(event.target.value)
@@ -22,10 +29,7 @@ const DataFetcher = (props) => {
       },
     }
     try {
-      const response = await fetch(
-        `https://api.vimeo.com/videos/${vimeoId}?fields=play,pictures,files,name`,
-        options,
-      )
+      const response = await fetch(url, options)
       const data = await response.json()
       if (data?.name) {
         setErrorMsg('')

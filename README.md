@@ -48,8 +48,16 @@ defineField({
   title: 'Vimeo',
   name: 'vimeo',
   type: 'vimeo',
+  // Optional: Extend the default fields, see below for more information
+  options: {
+    fields: ['metadata'],
+  },
 })
 ```
+
+## Options
+
+By default the plugin stores the fields `name`, `pictures`, `files` and `play`, but you can extend (not overwrite) the fields through the options. Please be sure to add fields as an array of strings. See the [vimeo response documentation](https://developer.vimeo.com/api/reference/response/video) for a list of available fields.
 
 ## License
 
