@@ -11,7 +11,9 @@ export interface InputProps extends VimeoFieldInput {
 }
 
 export const VideoInput = (config: Config, props: InputProps) => {
+  const {fields} = props?.schemaType?.options
   const {accessToken} = config
+
   const {onChange, value} = props
   const handleReset = () => {
     onChange(unset())
@@ -29,7 +31,7 @@ export const VideoInput = (config: Config, props: InputProps) => {
 
   return (
     <Card>
-      {!value && <DataFetcher accessToken={accessToken} onSuccess={setVimeoData} />}
+      {!value && <DataFetcher accessToken={accessToken} onSuccess={setVimeoData} fields={fields} />}
       <div>{value?.error}</div>
       {value?.pictures?.sizes?.length && (
         <Stack space={4}>
@@ -56,28 +58,6 @@ export const VideoInput = (config: Config, props: InputProps) => {
               Title
             </Text>
             <TextInput fontSize={2} padding={3} readOnly value={value?.name} />
-          </Stack>
-          <Stack space={3}>
-            <Text size={1} weight="semibold">
-              Files
-            </Text>
-            <TextInput
-              fontSize={2}
-              padding={3}
-              readOnly
-              value={value?.files?.map((file) => file?.rendition)?.join(', ')}
-            />
-          </Stack>
-          <Stack space={3}>
-            <Text size={1} weight="semibold">
-              Play (progressive)
-            </Text>
-            <TextInput
-              fontSize={2}
-              padding={3}
-              readOnly
-              value={value?.play?.progressive?.map((file) => file?.rendition)?.join(', ')}
-            />
           </Stack>
           <Inline space={[2]}>
             <Button
