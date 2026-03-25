@@ -3,16 +3,11 @@ import {TrashIcon} from '@sanity/icons'
 import {Button, Card, Inline, Stack, Text, TextInput} from '@sanity/ui'
 import {set, unset} from 'sanity'
 
-import type {Config, VimeoFieldInput} from '../utils/types'
+import type {VimeoFieldInput} from '../utils/types'
 import DataFetcher from './DataFetcher'
 
-export interface InputProps extends VimeoFieldInput {
-  config: Config
-}
-
-export const VideoInput = (config: Config, props: VimeoFieldInput) => {
+export const VideoInput = (props: VimeoFieldInput) => {
   const fields = props?.schemaType?.options?.fields
-  const {accessToken} = config
 
   const {onChange, value} = props
   const handleReset = () => {
@@ -31,7 +26,7 @@ export const VideoInput = (config: Config, props: VimeoFieldInput) => {
 
   return (
     <Card>
-      {!value && <DataFetcher accessToken={accessToken} onSuccess={setVimeoData} fields={fields} />}
+      {!value && <DataFetcher onSuccess={setVimeoData} fields={fields} />}
       <div>{value?.error}</div>
       {value?.pictures?.sizes?.length && (
         <Stack space={4}>

@@ -16,13 +16,7 @@ pnpm add sanity-plugin-vimeo-field
 
 ## Configuration
 
-Add your Vimeo access token to your `.env`
-
-```sh
-SANITY_STUDIO_VIMEO_ACCESS_TOKEN="YOUR_ACCESS_TOKEN"
-```
-
-Add the plugin to your Sanity configuration
+Add the plugin to your Sanity configuration:
 
 ```ts
 // `sanity.config.ts` / `sanity.config.js`:
@@ -33,12 +27,16 @@ export default defineConfig({
   // ...
   plugins: [
     // ...
-    vimeoField({
-      accessToken: process.env.SANITY_STUDIO_VIMEO_ACCESS_TOKEN,
-    }),
+    vimeoField(),
   ],
 })
 ```
+
+### Vimeo Access Token
+
+The first time you use the Vimeo field in the Studio, you will be prompted to enter your Vimeo API access token. The token is stored securely in the Sanity dataset using [@sanity/studio-secrets](https://github.com/sanity-io/plugins/tree/main/plugins/%40sanity/studio-secrets) — it is **not** exposed in the client-side JS bundle.
+
+You can update the token at any time by clicking "Configure Vimeo Token" below the Vimeo ID input field.
 
 ## Usage
 
