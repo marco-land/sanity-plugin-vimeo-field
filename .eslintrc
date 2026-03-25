@@ -13,6 +13,7 @@
     "plugin:react/jsx-runtime",
   ],
   "rules": {
+    "@typescript-eslint/ban-ts-comment": ["error", { "ts-nocheck": "allow-with-description" }],
     "@typescript-eslint/explicit-function-return-type": 0,
     "@typescript-eslint/explicit-module-boundary-types": 0,
     "@typescript-eslint/no-shadow": "error",
