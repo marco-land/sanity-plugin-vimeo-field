@@ -17,6 +17,7 @@
   "type": "module",
   "license": "MIT",
   "author": "Marco Land <mail@marco.land>",
+  "packageManager": "pnpm@10.12.4",
   "exports": {
     ".": {
       "source": "./src/index.ts",
