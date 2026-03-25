@@ -2,8 +2,6 @@
 
 Retrieve Vimeo video data via the API with an access token and store it in Sanity.
 
-![Sanity Plugin Vimeo Field Preview](https://github.com/marco-land/sanity-plugin-vimeo-field/assets/24410335/b1bd4b87-4575-4669-9ea8-a704806a9532)
-
 ## Installation
 
 ```sh
