@@ -7,12 +7,12 @@ Retrieve Vimeo video data via the API with an access token and store it in Sanit
 ## Installation
 
 ```sh
-yarn install sanity-plugin-vimeo-field
-# or npm
 npm install sanity-plugin-vimeo-field
+# or
+pnpm add sanity-plugin-vimeo-field
 ```
 
-ℹ This is a **Sanity Studio** v3 plugin
+> **Requires Sanity Studio v5** and React 18+.
 
 ## Configuration
 
@@ -65,8 +65,26 @@ By default the plugin stores the fields `name`, `pictures`, `files` and `play`, 
 
 ## Develop & test
 
-This plugin uses [@sanity/plugin-kit](https://github.com/sanity-io/plugin-kit)
-with default configuration for build & watch scripts.
+This plugin uses [@sanity/plugin-kit](https://github.com/sanity-io/plugin-kit) with default configuration for build & watch scripts.
 
-See [Testing a plugin in Sanity Studio](https://github.com/sanity-io/plugin-kit#testing-a-plugin-in-sanity-studio)
-on how to run this plugin with hotreload in the studio.
+```sh
+# Install dependencies
+pnpm install
+
+# Build the plugin
+pnpm build
+
+# Watch for changes during development
+pnpm watch
+
+# Link into a Sanity Studio for live development
+pnpm link-watch
+
+# Lint
+pnpm lint
+
+# Format
+pnpm format
+```
+
+See [Testing a plugin in Sanity Studio](https://github.com/sanity-io/plugin-kit#testing-a-plugin-in-sanity-studio) on how to run this plugin with hotreload in the studio.
