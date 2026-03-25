@@ -4,7 +4,7 @@ import {Button, Card, Inline, Stack, Text, TextInput} from '@sanity/ui'
 import {set, unset} from 'sanity'
 
 import type {VimeoFieldInput} from '../utils/types'
-import DataFetcher from './DataFetcher'
+import VideoPicker from './VideoPicker'
 
 export const VideoInput = (props: VimeoFieldInput) => {
   const fields = props?.schemaType?.options?.fields
@@ -14,7 +14,7 @@ export const VideoInput = (props: VimeoFieldInput) => {
     onChange(unset())
   }
 
-  const setVimeoData = (data) => {
+  const handleSelect = (data) => {
     onChange(data ? set(data) : unset())
   }
 
@@ -26,7 +26,7 @@ export const VideoInput = (props: VimeoFieldInput) => {
 
   return (
     <Card>
-      {!value && <DataFetcher onSuccess={setVimeoData} fields={fields} />}
+      {!value && <VideoPicker onSelect={handleSelect} fields={fields} />}
       <div>{value?.error}</div>
       {value?.pictures?.sizes?.length && (
         <Stack space={4}>
