@@ -1,6 +1,4 @@
-// @ts-nocheck
-import React from 'react'
-
+// @ts-nocheck -- loose types inherited from pre-v5
 import {VideoInput} from './components/VideoInput'
 import type {Config, VimeoFieldInput} from './utils/types'
 

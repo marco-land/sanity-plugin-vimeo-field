@@ -1,4 +1,4 @@
-// @ts-nocheck
+// @ts-nocheck -- loose types inherited from pre-v5
 import type {ObjectInputProps} from 'sanity'
 
 export interface Config {

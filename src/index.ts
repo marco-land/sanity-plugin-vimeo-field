@@ -1,9 +1,8 @@
 import {definePlugin, defineType} from 'sanity'
 
-import {vimeo} from './schema'
 import {VideoInput} from './components/VideoInput'
 interface Config {
-  accessToken?: string
+  accessToken: string | undefined
 }
 
 const defaultConfig: Config = {

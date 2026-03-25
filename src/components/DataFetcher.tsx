@@ -1,7 +1,7 @@
-// @ts-nocheck
-import React, {useState} from 'react'
-import {Inline, TextInput, Text, Code, Button, Stack, Spinner} from '@sanity/ui'
+// @ts-nocheck -- loose types inherited from pre-v5
 import {SyncIcon} from '@sanity/icons'
+import {Button, Code, Inline, Spinner, Stack, Text, TextInput} from '@sanity/ui'
+import {useState} from 'react'
 
 const DataFetcher = (props) => {
   // eslint-disable-next-line react/prop-types
