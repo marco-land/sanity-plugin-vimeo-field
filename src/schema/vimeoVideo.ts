@@ -4,8 +4,9 @@ export const vimeoVideoType = defineType({
   name: 'vimeoVideo',
   title: 'Vimeo Video',
   type: 'document',
-  // Hidden from Studio navigation — managed programmatically by the plugin
   liveEdit: true,
+  readOnly: true,
+  __experimental_omnisearch_visibility: true,
   fields: [
     defineField({
       name: 'vimeoId',
