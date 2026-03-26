@@ -30,14 +30,13 @@ export const vimeoFieldPlugin = definePlugin(() => {
 export const vimeoField = (
   fieldOptions?: Partial<Omit<FieldDefinitionBase, 'type'>> &
     Partial<Pick<ReferenceDefinition, 'options'>>,
-) =>
-  defineField({
-    name: 'vimeo',
-    title: 'Vimeo Video',
-    ...fieldOptions,
-    type: 'reference',
-    to: [{type: 'vimeoVideo'}],
-    components: {
-      input: VimeoReferenceInput,
-    },
-  })
+) => defineField({
+  name: 'vimeo',
+  title: 'Vimeo Video',
+  ...fieldOptions,
+  type: 'reference',
+  to: [{type: 'vimeoVideo'}],
+  components: {
+    input: VimeoReferenceInput,
+  },
+})

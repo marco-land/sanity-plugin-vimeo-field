@@ -39,7 +39,9 @@ export interface SyncResult {
 
 function extractVimeoId(uri: string): string {
   const match = uri.match(/\/videos\/(\d+)/)
-  if (!match) throw new Error(`Could not extract video ID from URI: ${uri}`)
+  if (!match) {
+    throw new Error(`Could not extract video ID from URI: ${uri}`)
+  }
   return match[1]
 }
 
@@ -56,33 +58,33 @@ function mapVideoToDocument(video: VimeoApiVideo) {
     lastSynced: new Date().toISOString(),
     pictures: video.pictures
       ? {
+        _type: 'object' as const,
+        sizes: video.pictures.sizes?.map((s) => ({
           _type: 'object' as const,
-          sizes: video.pictures.sizes?.map((s) => ({
-            _type: 'object' as const,
-            _key: `${s.width}x${s.height}`,
-            width: s.width,
-            height: s.height,
-            link: s.link,
-          })),
-        }
+          _key: `${s.width}x${s.height}`,
+          width: s.width,
+          height: s.height,
+          link: s.link,
+        })),
+      }
       : undefined,
     play: video.play
       ? {
+        _type: 'object' as const,
+        progressive: video.play.progressive?.map((p) => ({
           _type: 'object' as const,
-          progressive: video.play.progressive?.map((p) => ({
-            _type: 'object' as const,
-            _key: `${p.rendition}-${p.width}x${p.height}`,
-            type: p.type,
-            rendition: p.rendition,
-            width: p.width,
-            height: p.height,
-            link: p.link,
-          })),
-          dash: video.play.dash
-            ? {_type: 'object' as const, link: video.play.dash.link}
-            : undefined,
-          hls: video.play.hls ? {_type: 'object' as const, link: video.play.hls.link} : undefined,
-        }
+          _key: `${p.rendition}-${p.width}x${p.height}`,
+          type: p.type,
+          rendition: p.rendition,
+          width: p.width,
+          height: p.height,
+          link: p.link,
+        })),
+        dash: video.play.dash
+          ? {_type: 'object' as const, link: video.play.dash.link}
+          : undefined,
+        hls: video.play.hls ? {_type: 'object' as const, link: video.play.hls.link} : undefined,
+      }
       : undefined,
   }
 }
