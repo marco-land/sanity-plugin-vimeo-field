@@ -1,6 +1,7 @@
 import {defineField, definePlugin} from 'sanity'
 import type {FieldDefinitionBase, ReferenceDefinition} from 'sanity'
 
+import {VimeoReferenceInput} from './components/VimeoReferenceInput'
 import {vimeoVideoType} from './schema/vimeoVideo'
 
 export {vimeoVideoType} from './schema/vimeoVideo'
@@ -20,7 +21,8 @@ export const vimeoFieldPlugin = definePlugin(() => {
 })
 
 /**
- * Returns a reference field definition pointing to `vimeoVideo`.
+ * Returns a reference field definition pointing to `vimeoVideo`
+ * with the custom Vimeo picker input component.
  * Use this inside a document's fields array.
  */
 export const vimeoField = (
@@ -33,4 +35,7 @@ export const vimeoField = (
     ...fieldOptions,
     type: 'reference',
     to: [{type: 'vimeoVideo'}],
+    components: {
+      input: VimeoReferenceInput,
+    },
   })
