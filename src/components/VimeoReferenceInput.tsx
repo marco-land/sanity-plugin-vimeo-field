@@ -12,7 +12,6 @@ import {
   Spinner,
   Stack,
   Text,
-  TextInput,
 } from '@sanity/ui'
 import {useCallback, useEffect, useState} from 'react'
 import {set, unset, useClient} from 'sanity'
@@ -74,6 +73,7 @@ export function VimeoReferenceInput(props) {
   const [loadingVideos, setLoadingVideos] = useState(false)
   const [videos, setVideos] = useState<VimeoVideoDoc[]>([])
   const [error, setError] = useState('')
+  const [syncMessage, setSyncMessage] = useState('')
   const [confirmRemove, setConfirmRemove] = useState(false)
 
   // Resolved referenced document
@@ -96,23 +96,9 @@ export function VimeoReferenceInput(props) {
       .finally(() => setResolving(false))
   }, [refId, client])
 
-  const syncAndLoad = useCallback(async () => {
-    if (!accessToken) return
-    setError('')
-    setSyncing(true)
-    try {
-      const result = await syncVimeoVideos(accessToken, client)
-      if (result.errors.length > 0) {
-        setError(`Synced ${result.synced} videos with ${result.errors.length} error(s): ${result.errors[0]}`)
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Sync failed')
-      setSyncing(false)
-      return
-    }
-    setSyncing(false)
-
+  const loadVideos = useCallback(async () => {
     setLoadingVideos(true)
+    setError('')
     try {
       const docs = await client.fetch<VimeoVideoDoc[]>(
         '*[_type == "vimeoVideo"] | order(name asc)',
@@ -122,7 +108,29 @@ export function VimeoReferenceInput(props) {
       setError(err instanceof Error ? err.message : 'Failed to load videos')
     }
     setLoadingVideos(false)
-  }, [accessToken, client])
+  }, [client])
+
+  const handleSync = useCallback(async () => {
+    if (!accessToken) return
+    setError('')
+    setSyncMessage('')
+    setSyncing(true)
+    try {
+      const result = await syncVimeoVideos(accessToken, client)
+      if (result.errors.length > 0) {
+        setError(`Synced ${result.synced} videos with ${result.errors.length} error(s): ${result.errors[0]}`)
+      } else {
+        setSyncMessage(`Synced ${result.synced} video${result.synced === 1 ? '' : 's'}`)
+        setTimeout(() => setSyncMessage(''), 4000)
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Sync failed')
+      setSyncing(false)
+      return
+    }
+    setSyncing(false)
+    await loadVideos()
+  }, [accessToken, client, loadVideos])
 
   const handleOpen = useCallback(() => {
     if (!accessToken) {
@@ -132,11 +140,12 @@ export function VimeoReferenceInput(props) {
     setDialogOpen(true)
   }, [accessToken])
 
+  // Load existing documents when dialog opens (no sync)
   useEffect(() => {
-    if (dialogOpen && accessToken) {
-      syncAndLoad()
+    if (dialogOpen) {
+      loadVideos()
     }
-  }, [dialogOpen, accessToken, syncAndLoad])
+  }, [dialogOpen, loadVideos])
 
   const handleSelect = useCallback(
     (doc: VimeoVideoDoc) => {
@@ -169,8 +178,6 @@ export function VimeoReferenceInput(props) {
       </Flex>
     )
   }
-
-  const isLoading = syncing || loadingVideos
 
   // Populated state
   if (refId) {
@@ -313,37 +320,48 @@ export function VimeoReferenceInput(props) {
         width={3}
       >
         <Box padding={4}>
-          {isLoading && !videos.length && (
-            <Stack space={3}>
+          <Stack space={4}>
+            <Flex justify="flex-end" align="center" gap={3}>
+              {syncMessage && (
+                <Card padding={2} tone="positive" radius={2}>
+                  <Text size={1}>{syncMessage}</Text>
+                </Card>
+              )}
+              <Button
+                text={syncing ? 'Syncing…' : 'Sync from Vimeo'}
+                icon={SyncIcon}
+                mode="ghost"
+                tone="primary"
+                disabled={syncing}
+                onClick={handleSync}
+              />
+              {syncing && <Spinner muted />}
+            </Flex>
+
+            {loadingVideos && !videos.length && (
               <Flex justify="center" padding={5}>
                 <Spinner muted />
               </Flex>
-              <Text size={1} muted align="center">
-                {syncing ? 'Syncing videos from Vimeo…' : 'Loading videos…'}
-              </Text>
-            </Stack>
-          )}
+            )}
 
-          {error && (
-            <Card padding={3} tone="critical" radius={2} marginBottom={3}>
-              <Text size={1}>{error}</Text>
-            </Card>
-          )}
+            {error && (
+              <Card padding={3} tone="critical" radius={2}>
+                <Text size={1}>{error}</Text>
+              </Card>
+            )}
 
-          {!isLoading && !error && !videos.length && (
-            <Text size={1} muted>
-              No videos found.
-            </Text>
-          )}
+            {!loadingVideos && !error && !videos.length && (
+              <Card padding={4} tone="transparent" radius={2} border>
+                <Stack space={3}>
+                  <Text size={1} muted align="center">
+                    No videos synced yet. Click &lsquo;Sync from Vimeo&rsquo; to import your Vimeo
+                    library.
+                  </Text>
+                </Stack>
+              </Card>
+            )}
 
-          {videos.length > 0 && (
-            <Stack space={4}>
-              {isLoading && (
-                <Flex justify="center">
-                  <Spinner muted />
-                </Flex>
-              )}
-
+            {videos.length > 0 && (
               <Grid columns={[1, 2, 3, 4]} gap={3}>
                 {videos.map((doc) => {
                   const thumb = pickThumbnail(doc.pictures?.sizes)
@@ -388,8 +406,8 @@ export function VimeoReferenceInput(props) {
                   )
                 })}
               </Grid>
-            </Stack>
-          )}
+            )}
+          </Stack>
         </Box>
       </Dialog>
     )
