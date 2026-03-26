@@ -12,48 +12,47 @@ pnpm add sanity-plugin-vimeo-field
 
 > **Requires Sanity Studio v5** and React 18+.
 
-## Configuration
+## Setup
 
-Add the plugin to your Sanity configuration:
+The plugin exposes two exports:
+
+| Export | Purpose |
+| --- | --- |
+| `vimeoFieldPlugin` | Registers the hidden `vimeoVideo` document type. Add to `plugins`. |
+| `vimeoField` | Returns a `reference` field pointing to `vimeoVideo`. Add to a document's `fields`. |
+
+### 1. Register the plugin
 
 ```ts
-// `sanity.config.ts` / `sanity.config.js`:
+// sanity.config.ts
 import {defineConfig} from 'sanity'
-import {vimeoField} from 'sanity-plugin-vimeo-field'
+import {vimeoFieldPlugin} from 'sanity-plugin-vimeo-field'
 
 export default defineConfig({
   // ...
-  plugins: [
-    // ...
-    vimeoField(),
-  ],
+  plugins: [vimeoFieldPlugin()],
 })
 ```
 
-### Vimeo Access Token
-
-The first time you use the Vimeo field in the Studio, you will be prompted to enter your Vimeo API access token. The token is stored securely in the Sanity dataset using [@sanity/studio-secrets](https://github.com/sanity-io/plugins/tree/main/plugins/%40sanity/studio-secrets) — it is **not** exposed in the client-side JS bundle.
-
-You can update the token at any time by clicking "Configure Vimeo Token" below the Vimeo ID input field.
-
-## Usage
+### 2. Add a Vimeo field to a document
 
 ```ts
-// … your schema
-defineField({
-  title: 'Vimeo',
-  name: 'vimeo',
-  type: 'vimeo',
-  // Optional: Extend the default fields, see below for more information
-  options: {
-    fields: ['metadata'],
-  },
+// schemas/movie.ts
+import {defineType} from 'sanity'
+import {vimeoField} from 'sanity-plugin-vimeo-field'
+
+export default defineType({
+  name: 'movie',
+  title: 'Movie',
+  type: 'document',
+  fields: [
+    // Uses defaults: name 'vimeo', title 'Vimeo Video'
+    vimeoField(),
+
+    // Or override name, title, validation, etc.
+    vimeoField({name: 'trailer', title: 'Trailer'}),
+  ],
 })
-```
-
-## Options
-
-By default the plugin stores the fields `name`, `pictures`, `files` and `play`, but you can extend (not overwrite) the fields through the options. Please be sure to add fields as an array of strings. See the [vimeo response documentation](https://developer.vimeo.com/api/reference/response/video) for a list of available fields.
 
 ## License
 
