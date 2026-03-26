@@ -14,10 +14,11 @@ interface VimeoProgressive {
   link: string
 }
 
-interface VimeoVideo {
+interface VimeoApiVideo {
   uri: string
   name: string
   duration: number
+  privacy?: {view?: string}
   pictures: {sizes: VimeoSize[]}
   play?: {
     progressive?: VimeoProgressive[]
@@ -27,11 +28,11 @@ interface VimeoVideo {
 }
 
 interface VimeoPageResponse {
-  data: VimeoVideo[]
+  data: VimeoApiVideo[]
   paging: {next: string | null}
 }
 
-interface SyncResult {
+export interface SyncResult {
   synced: number
   errors: string[]
 }
@@ -42,7 +43,7 @@ function extractVimeoId(uri: string): string {
   return match[1]
 }
 
-function mapVideoToDocument(video: VimeoVideo) {
+function mapVideoToDocument(video: VimeoApiVideo) {
   const vimeoId = extractVimeoId(video.uri)
 
   return {
@@ -51,6 +52,7 @@ function mapVideoToDocument(video: VimeoVideo) {
     vimeoId,
     name: video.name,
     duration: video.duration,
+    privacy: video.privacy?.view ?? undefined,
     lastSynced: new Date().toISOString(),
     pictures: video.pictures
       ? {
@@ -76,17 +78,21 @@ function mapVideoToDocument(video: VimeoVideo) {
             height: p.height,
             link: p.link,
           })),
-          dash: video.play.dash ? {_type: 'object' as const, link: video.play.dash.link} : undefined,
+          dash: video.play.dash
+            ? {_type: 'object' as const, link: video.play.dash.link}
+            : undefined,
           hls: video.play.hls ? {_type: 'object' as const, link: video.play.hls.link} : undefined,
         }
       : undefined,
   }
 }
 
-async function fetchAllVideos(accessToken: string): Promise<VimeoVideo[]> {
-  const allVideos: VimeoVideo[] = []
-  let url: string | null =
-    'https://api.vimeo.com/me/videos?per_page=100&fields=uri,name,duration,created_time,pictures,play'
+const API_FIELDS = 'uri,name,duration,created_time,pictures,play,privacy.view'
+const BASE_URL = 'https://api.vimeo.com'
+
+async function fetchAllVideos(accessToken: string): Promise<VimeoApiVideo[]> {
+  const allVideos: VimeoApiVideo[] = []
+  let url: string | null = `${BASE_URL}/me/videos?per_page=100&fields=${API_FIELDS}`
 
   while (url) {
     const response = await fetch(url, {
@@ -100,7 +106,7 @@ async function fetchAllVideos(accessToken: string): Promise<VimeoVideo[]> {
     const page: VimeoPageResponse = await response.json()
     allVideos.push(...page.data)
 
-    url = page.paging.next ? `https://api.vimeo.com${page.paging.next}` : null
+    url = page.paging.next ? `${BASE_URL}${page.paging.next}` : null
   }
 
   return allVideos
@@ -129,4 +135,22 @@ export async function syncVimeoVideos(
   await transaction.commit()
 
   return {synced, errors}
+}
+
+export async function refreshSingleVideo(
+  vimeoId: string,
+  accessToken: string,
+  client: SanityClient,
+): Promise<void> {
+  const response = await fetch(`${BASE_URL}/videos/${vimeoId}?fields=${API_FIELDS}`, {
+    headers: {Authorization: `Bearer ${accessToken}`},
+  })
+
+  if (!response.ok) {
+    throw new Error(`Vimeo API error: ${response.status} ${response.statusText}`)
+  }
+
+  const video: VimeoApiVideo = await response.json()
+  const doc = mapVideoToDocument(video)
+  await client.createOrReplace(doc)
 }

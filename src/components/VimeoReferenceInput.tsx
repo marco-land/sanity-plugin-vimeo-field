@@ -1,7 +1,8 @@
 // @ts-nocheck -- loose types; tsc verification disabled for this plugin
-import {PlayIcon, SearchIcon, TrashIcon, SyncIcon} from '@sanity/icons'
+import {PlayIcon, SearchIcon, SyncIcon, TrashIcon} from '@sanity/icons'
 import {SettingsView, useSecrets} from '@sanity/studio-secrets'
 import {
+  Badge,
   Box,
   Button,
   Card,
@@ -16,19 +17,11 @@ import {
 import {useCallback, useEffect, useState} from 'react'
 import {set, unset, useClient} from 'sanity'
 
-import {syncVimeoVideos} from '../lib/syncVimeoVideos'
+import {refreshSingleVideo, syncVimeoVideos} from '../lib/syncVimeoVideos'
+import type {VimeoVideo} from '../utils/types'
 
 const NAMESPACE = 'vimeo'
 const SECRET_KEYS = [{key: 'accessToken', title: 'Vimeo Access Token'}]
-
-interface VimeoVideoDoc {
-  _id: string
-  vimeoId: string
-  name: string
-  duration?: number
-  lastSynced?: string
-  pictures?: {sizes?: {width: number; height: number; link: string}[]}
-}
 
 function formatDuration(seconds: number): string {
   const mins = Math.floor(seconds / 60)
@@ -61,8 +54,34 @@ function pickThumbnail(sizes?: {width: number; height: number; link: string}[]) 
   return best
 }
 
+function privacyTone(privacy?: string) {
+  switch (privacy) {
+    case 'anybody':
+      return 'positive'
+    case 'nobody':
+      return 'critical'
+    case 'unlisted':
+      return 'caution'
+    default:
+      return 'default'
+  }
+}
+
+function privacyLabel(privacy?: string): string {
+  switch (privacy) {
+    case 'anybody':
+      return 'Public'
+    case 'nobody':
+      return 'Private'
+    case 'unlisted':
+      return 'Unlisted'
+    default:
+      return privacy ?? 'Unknown'
+  }
+}
+
 export function VimeoReferenceInput(props) {
-  const {onChange, value, renderDefault} = props
+  const {onChange, value} = props
   const client = useClient({apiVersion: '2024-01-01'})
   const {secrets, loading: secretsLoading} = useSecrets(NAMESPACE)
   const accessToken = secrets?.accessToken
@@ -71,16 +90,29 @@ export function VimeoReferenceInput(props) {
   const [showSettings, setShowSettings] = useState(false)
   const [syncing, setSyncing] = useState(false)
   const [loadingVideos, setLoadingVideos] = useState(false)
-  const [videos, setVideos] = useState<VimeoVideoDoc[]>([])
+  const [videos, setVideos] = useState<VimeoVideo[]>([])
   const [error, setError] = useState('')
   const [syncMessage, setSyncMessage] = useState('')
   const [confirmRemove, setConfirmRemove] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
 
   // Resolved referenced document
-  const [resolved, setResolved] = useState<VimeoVideoDoc | null>(null)
+  const [resolved, setResolved] = useState<VimeoVideo | null>(null)
   const [resolving, setResolving] = useState(false)
 
   const refId = value?._ref
+
+  const resolveRef = useCallback(
+    (id: string) => {
+      setResolving(true)
+      client
+        .fetch<VimeoVideo>('*[_id == $id][0]', {id})
+        .then((doc) => setResolved(doc || null))
+        .catch(() => setResolved(null))
+        .finally(() => setResolving(false))
+    },
+    [client],
+  )
 
   // Resolve the referenced document when we have a ref
   useEffect(() => {
@@ -88,21 +120,14 @@ export function VimeoReferenceInput(props) {
       setResolved(null)
       return
     }
-    setResolving(true)
-    client
-      .fetch<VimeoVideoDoc>('*[_id == $id][0]', {id: refId})
-      .then((doc) => setResolved(doc || null))
-      .catch(() => setResolved(null))
-      .finally(() => setResolving(false))
-  }, [refId, client])
+    resolveRef(refId)
+  }, [refId, resolveRef])
 
   const loadVideos = useCallback(async () => {
     setLoadingVideos(true)
     setError('')
     try {
-      const docs = await client.fetch<VimeoVideoDoc[]>(
-        '*[_type == "vimeoVideo"] | order(name asc)',
-      )
+      const docs = await client.fetch<VimeoVideo[]>('*[_type == "vimeoVideo"] | order(name asc)')
       setVideos(docs || [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load videos')
@@ -118,7 +143,9 @@ export function VimeoReferenceInput(props) {
     try {
       const result = await syncVimeoVideos(accessToken, client)
       if (result.errors.length > 0) {
-        setError(`Synced ${result.synced} videos with ${result.errors.length} error(s): ${result.errors[0]}`)
+        setError(
+          `Synced ${result.synced} videos with ${result.errors.length} error(s): ${result.errors[0]}`,
+        )
       } else {
         setSyncMessage(`Synced ${result.synced} video${result.synced === 1 ? '' : 's'}`)
         setTimeout(() => setSyncMessage(''), 4000)
@@ -131,6 +158,18 @@ export function VimeoReferenceInput(props) {
     setSyncing(false)
     await loadVideos()
   }, [accessToken, client, loadVideos])
+
+  const handleRefresh = useCallback(async () => {
+    if (!accessToken || !resolved?.vimeoId || !refId) return
+    setRefreshing(true)
+    try {
+      await refreshSingleVideo(resolved.vimeoId, accessToken, client)
+      resolveRef(refId)
+    } catch {
+      // Silently fail — the user can see lastSynced didn't change
+    }
+    setRefreshing(false)
+  }, [accessToken, client, resolved?.vimeoId, refId, resolveRef])
 
   const handleOpen = useCallback(() => {
     if (!accessToken) {
@@ -148,7 +187,7 @@ export function VimeoReferenceInput(props) {
   }, [dialogOpen, loadVideos])
 
   const handleSelect = useCallback(
-    (doc: VimeoVideoDoc) => {
+    (doc: VimeoVideo) => {
       onChange(set({_type: 'reference', _ref: doc._id}))
       setDialogOpen(false)
     },
@@ -230,13 +269,18 @@ export function VimeoReferenceInput(props) {
               />
             )}
             <Stack space={2} style={{flex: 1}}>
-              <Text size={1} weight="semibold">
-                {resolved.name}
-              </Text>
+              <Inline space={2}>
+                <Text size={1} weight="semibold">
+                  {resolved.name}
+                </Text>
+                <Badge tone={privacyTone(resolved.privacy)} fontSize={0}>
+                  {privacyLabel(resolved.privacy)}
+                </Badge>
+              </Inline>
               <Text size={0} muted>
                 ID: {resolved.vimeoId}
               </Text>
-              {resolved.duration != null && (
+              {resolved.duration !== null && resolved.duration !== undefined && (
                 <Text size={0} muted>
                   Duration: {formatDuration(resolved.duration)}
                 </Text>
@@ -250,6 +294,14 @@ export function VimeoReferenceInput(props) {
           </Flex>
           <Inline space={2}>
             <Button text="Change" icon={SearchIcon} mode="ghost" onClick={handleOpen} />
+            <Button
+              text={refreshing ? 'Refreshing…' : 'Refresh'}
+              icon={SyncIcon}
+              mode="ghost"
+              disabled={refreshing}
+              onClick={handleRefresh}
+            />
+            {refreshing && <Spinner muted />}
             {confirmRemove ? (
               <Inline space={2}>
                 <Button
@@ -258,11 +310,7 @@ export function VimeoReferenceInput(props) {
                   mode="default"
                   onClick={handleRemove}
                 />
-                <Button
-                  text="Cancel"
-                  mode="ghost"
-                  onClick={() => setConfirmRemove(false)}
-                />
+                <Button text="Cancel" mode="ghost" onClick={() => setConfirmRemove(false)} />
               </Inline>
             ) : (
               <Button
@@ -291,12 +339,7 @@ export function VimeoReferenceInput(props) {
   // Empty state
   return (
     <Stack space={3}>
-      <Button
-        text="Select Video"
-        icon={SearchIcon}
-        tone="primary"
-        onClick={handleOpen}
-      />
+      <Button text="Select Video" icon={SearchIcon} tone="primary" onClick={handleOpen} />
       <Inline>
         <Button
           text="Configure Vimeo Token"
@@ -352,12 +395,10 @@ export function VimeoReferenceInput(props) {
 
             {!loadingVideos && !error && !videos.length && (
               <Card padding={4} tone="transparent" radius={2} border>
-                <Stack space={3}>
-                  <Text size={1} muted align="center">
-                    No videos synced yet. Click &lsquo;Sync from Vimeo&rsquo; to import your Vimeo
-                    library.
-                  </Text>
-                </Stack>
+                <Text size={1} muted align="center">
+                  No videos synced yet. Click &lsquo;Sync from Vimeo&rsquo; to import your Vimeo
+                  library.
+                </Text>
               </Card>
             )}
 
@@ -388,7 +429,7 @@ export function VimeoReferenceInput(props) {
                             {doc.name}
                           </Text>
                           <Inline space={2}>
-                            {doc.duration != null && (
+                            {doc.duration !== null && doc.duration !== undefined && (
                               <Text size={0} muted>
                                 <PlayIcon style={{verticalAlign: 'middle', marginRight: 2}} />
                                 {formatDuration(doc.duration)}
