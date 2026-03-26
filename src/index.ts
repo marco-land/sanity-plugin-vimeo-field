@@ -1,19 +1,16 @@
 import {defineField, definePlugin} from 'sanity'
+import type {FieldDefinitionBase, ReferenceDefinition} from 'sanity'
 
 import {vimeoVideoType} from './schema/vimeoVideo'
 
 export {vimeoVideoType} from './schema/vimeoVideo'
 export {syncVimeoVideos} from './lib/syncVimeoVideos'
 
-export const vimeoField = (options?: {name?: string; title?: string}) =>
-  defineField({
-    name: options?.name ?? 'vimeo',
-    title: options?.title ?? 'Vimeo Video',
-    type: 'reference',
-    to: [{type: 'vimeoVideo'}],
-  })
-
-export const vimeoPlugin = definePlugin(() => {
+/**
+ * Registers the hidden `vimeoVideo` document type with Sanity.
+ * Add this to your `sanity.config.ts` plugins array.
+ */
+export const vimeoFieldPlugin = definePlugin(() => {
   return {
     name: 'sanity-plugin-vimeo-field',
     schema: {
@@ -21,3 +18,19 @@ export const vimeoPlugin = definePlugin(() => {
     },
   }
 })
+
+/**
+ * Returns a reference field definition pointing to `vimeoVideo`.
+ * Use this inside a document's fields array.
+ */
+export const vimeoField = (
+  fieldOptions?: Partial<Omit<FieldDefinitionBase, 'type'>> &
+    Partial<Pick<ReferenceDefinition, 'options'>>,
+) =>
+  defineField({
+    name: 'vimeo',
+    title: 'Vimeo Video',
+    ...fieldOptions,
+    type: 'reference',
+    to: [{type: 'vimeoVideo'}],
+  })
