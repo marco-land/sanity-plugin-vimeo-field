@@ -1,5 +1,10 @@
 # Sanity Plugin Vimeo Field
 
+[![npm version](https://img.shields.io/npm/v/sanity-plugin-vimeo-field)](https://www.npmjs.com/package/sanity-plugin-vimeo-field)
+[![npm downloads](https://img.shields.io/npm/dm/sanity-plugin-vimeo-field)](https://www.npmjs.com/package/sanity-plugin-vimeo-field)
+[![license](https://img.shields.io/npm/l/sanity-plugin-vimeo-field)](https://github.com/marco-land/sanity-plugin-vimeo-field/blob/main/LICENSE)
+[![CI](https://github.com/marco-land/sanity-plugin-vimeo-field/actions/workflows/release.yml/badge.svg)](https://github.com/marco-land/sanity-plugin-vimeo-field/actions/workflows/release.yml)
+
 Syncs your Vimeo video library into Sanity as first-class documents and provides a reference field with a visual picker.
 
 ## Installation
