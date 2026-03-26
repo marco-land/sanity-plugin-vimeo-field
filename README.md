@@ -59,6 +59,14 @@ export default defineType({
 
 The first time you use the field, you will be prompted to enter your Vimeo API access token. The token is stored securely in the Sanity dataset using [@sanity/studio-secrets](https://github.com/sanity-io/plugins/tree/main/plugins/%40sanity/studio-secrets).
 
+To create a token, go to [developer.vimeo.com/apps](https://developer.vimeo.com/apps), select your app (or create one), and generate a personal access token with the following scopes:
+
+- **Public** — access public videos
+- **Private** — access private and unlisted videos
+- **Video Files** — access direct video file links (progressive/HLS/DASH)
+
+> The **Video Files** scope requires a Vimeo **Pro** plan or above. Without it the `play` field will be empty.
+
 ## How it works
 
 Videos are stored as hidden `vimeoVideo` documents in your dataset. The field is a standard Sanity `reference` to these documents.
@@ -134,9 +142,6 @@ pnpm link-watch
 
 # Lint
 pnpm lint
-
-# Format
-pnpm format
 ```
 
 See [Testing a plugin in Sanity Studio](https://github.com/sanity-io/plugin-kit#testing-a-plugin-in-sanity-studio) on how to run this plugin with hotreload in the studio.
