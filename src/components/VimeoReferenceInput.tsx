@@ -13,8 +13,9 @@ import {
   Spinner,
   Stack,
   Text,
+  TextInput,
 } from '@sanity/ui'
-import {useCallback, useEffect, useState} from 'react'
+import {useCallback, useEffect, useMemo, useState} from 'react'
 import {set, unset, useClient} from 'sanity'
 
 import {refreshSingleVideo, syncVimeoVideos} from '../lib/syncVimeoVideos'
@@ -95,6 +96,7 @@ export function VimeoReferenceInput(props) {
   const [syncMessage, setSyncMessage] = useState('')
   const [confirmRemove, setConfirmRemove] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   // Resolved referenced document
   const [resolved, setResolved] = useState<VimeoVideo | null>(null)
@@ -182,9 +184,16 @@ export function VimeoReferenceInput(props) {
   // Load existing documents when dialog opens (no sync)
   useEffect(() => {
     if (dialogOpen) {
+      setSearchQuery('')
       loadVideos()
     }
   }, [dialogOpen, loadVideos])
+
+  const filteredVideos = useMemo(() => {
+    if (!searchQuery.trim()) return videos
+    const q = searchQuery.toLowerCase()
+    return videos.filter((v) => v.name?.toLowerCase().includes(q) || v.vimeoId?.includes(q))
+  }, [videos, searchQuery])
 
   const handleSelect = useCallback(
     (doc: VimeoVideo) => {
@@ -364,9 +373,18 @@ export function VimeoReferenceInput(props) {
       >
         <Box padding={4}>
           <Stack space={4}>
-            <Flex justify="flex-end" align="center" gap={3}>
+            <Flex align="center" gap={3}>
+              <Box style={{flex: 1}}>
+                <TextInput
+                  icon={SearchIcon}
+                  placeholder="Search by name or ID…"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.currentTarget.value)}
+                  fontSize={1}
+                />
+              </Box>
               {syncMessage && (
-                <Card padding={2} tone="positive" radius={2}>
+                <Card padding={2} tone="positive" radius={2} style={{flexShrink: 0}}>
                   <Text size={1}>{syncMessage}</Text>
                 </Card>
               )}
@@ -377,6 +395,7 @@ export function VimeoReferenceInput(props) {
                 tone="primary"
                 disabled={syncing}
                 onClick={handleSync}
+                style={{flexShrink: 0}}
               />
               {syncing && <Spinner muted />}
             </Flex>
@@ -402,9 +421,15 @@ export function VimeoReferenceInput(props) {
               </Card>
             )}
 
-            {videos.length > 0 && (
+            {videos.length > 0 && !filteredVideos.length && (
+              <Text size={1} muted align="center">
+                No videos matching &ldquo;{searchQuery}&rdquo;
+              </Text>
+            )}
+
+            {filteredVideos.length > 0 && (
               <Grid columns={[1, 2, 3, 4]} gap={3}>
-                {videos.map((doc) => {
+                {filteredVideos.map((doc) => {
                   const thumb = pickThumbnail(doc.pictures?.sizes)
                   const isSelected = refId === doc._id
                   return (
