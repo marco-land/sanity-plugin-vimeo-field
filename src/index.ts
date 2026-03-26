@@ -1,4 +1,4 @@
-import type {FieldDefinitionBase, ReferenceDefinition} from 'sanity'
+import type {FieldDefinitionBase, ReferenceDefinition, Template} from 'sanity'
 import {defineField, definePlugin} from 'sanity'
 
 import {VimeoReferenceInput} from './components/VimeoReferenceInput'
@@ -9,7 +9,7 @@ export {vimeoVideoType} from './schema/vimeoVideo'
 export type {VimeoVideo} from './utils/types'
 
 /**
- * Registers the hidden `vimeoVideo` document type with Sanity.
+ * Registers the `vimeoVideo` document type with Sanity.
  * Add this to your `sanity.config.ts` plugins array.
  */
 export const vimeoFieldPlugin = definePlugin(() => {
@@ -17,6 +17,7 @@ export const vimeoFieldPlugin = definePlugin(() => {
     name: 'sanity-plugin-vimeo-field',
     schema: {
       types: [vimeoVideoType],
+      templates: (prev: Template[]) => prev.filter((t) => t.schemaType !== 'vimeoVideo'),
     },
   }
 })
