@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+Do not add Co-Authored-By lines to commit messages.
+
 ## Overview
 
 Sanity Studio v5 plugin that syncs Vimeo videos into Sanity as first-class `vimeoVideo` documents and provides a custom reference field with a visual picker. Videos are fetched from the Vimeo API and stored/updated via `createOrReplace`.
