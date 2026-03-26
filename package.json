@@ -1,6 +1,6 @@
 {
   "name": "sanity-plugin-vimeo-field",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "",
   "keywords": [
     "sanity",
@@ -52,6 +52,7 @@
     "@sanity/pkg-utils": "^10",
     "@sanity/plugin-kit": "^4",
     "@sanity/ui": "^3",
+    "@semantic-release/git": "^10.0.1",
     "@types/react": "^18",
     "@typescript-eslint/eslint-plugin": "^8",
     "@typescript-eslint/parser": "^8",
