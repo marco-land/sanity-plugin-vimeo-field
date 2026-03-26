@@ -1,36 +1,22 @@
-import {definePlugin, defineType} from 'sanity'
+import {defineField, definePlugin} from 'sanity'
 
-import {VideoInput} from './components/VideoInput'
+import {vimeoVideoType} from './schema/vimeoVideo'
 
-export const vimeoField = definePlugin(() => {
+export {vimeoVideoType} from './schema/vimeoVideo'
+
+export const vimeoField = (options?: {name?: string; title?: string}) =>
+  defineField({
+    name: options?.name ?? 'vimeo',
+    title: options?.title ?? 'Vimeo Video',
+    type: 'reference',
+    to: [{type: 'vimeoVideo'}],
+  })
+
+export const vimeoPlugin = definePlugin(() => {
   return {
     name: 'sanity-plugin-vimeo-field',
     schema: {
-      types: [
-        defineType({
-          title: 'Vimeo Video',
-          name: 'vimeo',
-          type: 'object',
-          components: {
-            input: (props) => VideoInput(props),
-          },
-          fields: [
-            {
-              type: 'object',
-              name: 'vimeoData',
-              title: 'Vimeo Data',
-              readOnly: true,
-              fields: [
-                {
-                  title: 'Vimeo ID',
-                  name: 'id',
-                  type: 'string',
-                },
-              ],
-            },
-          ],
-        }),
-      ],
+      types: [vimeoVideoType],
     },
   }
 })
