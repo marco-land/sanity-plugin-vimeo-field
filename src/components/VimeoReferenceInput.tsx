@@ -1,4 +1,3 @@
-// @ts-nocheck -- loose types; tsc verification disabled for this plugin
 import {PlayIcon, SearchIcon, SyncIcon, TrashIcon} from '@sanity/icons'
 import {SettingsView, useSecrets} from '@sanity/studio-secrets'
 import {
@@ -15,8 +14,14 @@ import {
   Text,
   TextInput,
 } from '@sanity/ui'
+import type {ReactElement} from 'react'
 import {useCallback, useEffect, useMemo, useState} from 'react'
+import type {ObjectInputProps, Reference, ReferenceSchemaType} from 'sanity'
 import {set, unset, useClient} from 'sanity'
+
+interface VimeoSecrets {
+  accessToken?: string
+}
 
 import {refreshSingleVideo, syncVimeoVideos} from '../lib/syncVimeoVideos'
 import type {VimeoVideo} from '../utils/types'
@@ -41,7 +46,9 @@ function formatDate(dateStr: string): string {
 }
 
 function pickThumbnail(sizes?: {width: number; height: number; link: string}[]) {
-  if (!sizes?.length) return null
+  if (!sizes?.length) {
+    return null
+  }
   const target = 295
   let best = sizes[0]
   let bestDiff = Math.abs(best.width - target)
@@ -81,10 +88,12 @@ function privacyLabel(privacy?: string): string {
   }
 }
 
-export function VimeoReferenceInput(props) {
+export function VimeoReferenceInput(
+  props: ObjectInputProps<Reference, ReferenceSchemaType>,
+): ReactElement {
   const {onChange, value} = props
   const client = useClient({apiVersion: '2024-01-01'})
-  const {secrets, loading: secretsLoading} = useSecrets(NAMESPACE)
+  const {secrets, loading: secretsLoading} = useSecrets<VimeoSecrets>(NAMESPACE)
   const accessToken = secrets?.accessToken
 
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -138,16 +147,18 @@ export function VimeoReferenceInput(props) {
   }, [client])
 
   const handleSync = useCallback(async () => {
-    if (!accessToken) return
+    if (!accessToken) {
+      return
+    }
     setError('')
     setSyncMessage('')
     setSyncing(true)
     try {
       const result = await syncVimeoVideos(accessToken, client)
       if (result.errors.length > 0) {
-        setError(
-          `Synced ${result.synced} videos with ${result.errors.length} error(s): ${result.errors[0]}`,
-        )
+        const msg = `Synced ${result.synced} videos with ` +
+          `${result.errors.length} error(s): ${result.errors[0]}`
+        setError(msg)
       } else {
         setSyncMessage(`Synced ${result.synced} video${result.synced === 1 ? '' : 's'}`)
         setTimeout(() => setSyncMessage(''), 4000)
@@ -162,7 +173,9 @@ export function VimeoReferenceInput(props) {
   }, [accessToken, client, loadVideos])
 
   const handleRefresh = useCallback(async () => {
-    if (!accessToken || !resolved?.vimeoId || !refId) return
+    if (!accessToken || !resolved?.vimeoId || !refId) {
+      return
+    }
     setRefreshing(true)
     try {
       await refreshSingleVideo(resolved.vimeoId, accessToken, client)
@@ -190,7 +203,9 @@ export function VimeoReferenceInput(props) {
   }, [dialogOpen, loadVideos])
 
   const filteredVideos = useMemo(() => {
-    if (!searchQuery.trim()) return videos
+    if (!searchQuery.trim()) {
+      return videos
+    }
     const q = searchQuery.toLowerCase()
     return videos.filter((v) => v.name?.toLowerCase().includes(q) || v.vimeoId?.includes(q))
   }, [videos, searchQuery])
