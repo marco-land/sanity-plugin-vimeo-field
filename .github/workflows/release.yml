@@ -36,3 +36,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npx semantic-release
+
+      - name: Sync dev with main
+        run: |
+          git checkout dev
+          git merge --ff-only main
+          git push origin dev
