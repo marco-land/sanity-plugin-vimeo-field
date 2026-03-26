@@ -1,11 +1,12 @@
-import {defineField, definePlugin} from 'sanity'
 import type {FieldDefinitionBase, ReferenceDefinition} from 'sanity'
+import {defineField, definePlugin} from 'sanity'
 
 import {VimeoReferenceInput} from './components/VimeoReferenceInput'
 import {vimeoVideoType} from './schema/vimeoVideo'
 
+export {refreshSingleVideo, syncVimeoVideos} from './lib/syncVimeoVideos'
 export {vimeoVideoType} from './schema/vimeoVideo'
-export {syncVimeoVideos} from './lib/syncVimeoVideos'
+export type {VimeoVideo} from './utils/types'
 
 /**
  * Registers the hidden `vimeoVideo` document type with Sanity.

@@ -23,6 +23,11 @@ export const vimeoVideoType = defineType({
       type: 'number',
     }),
     defineField({
+      name: 'privacy',
+      title: 'Privacy',
+      type: 'string',
+    }),
+    defineField({
       name: 'lastSynced',
       title: 'Last Synced',
       type: 'datetime',
@@ -75,17 +80,13 @@ export const vimeoVideoType = defineType({
           name: 'dash',
           title: 'Dash',
           type: 'object',
-          fields: [
-            defineField({name: 'link', title: 'Link', type: 'url'}),
-          ],
+          fields: [defineField({name: 'link', title: 'Link', type: 'url'})],
         }),
         defineField({
           name: 'hls',
           title: 'HLS',
           type: 'object',
-          fields: [
-            defineField({name: 'link', title: 'Link', type: 'url'}),
-          ],
+          fields: [defineField({name: 'link', title: 'Link', type: 'url'})],
         }),
       ],
     }),

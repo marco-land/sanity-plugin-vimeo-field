@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-Sanity Studio v3 plugin that provides a custom `vimeo` field type. Users enter a Vimeo video ID, the plugin fetches video data from the Vimeo API (name, pictures, files, play + optional extra fields), and stores it in Sanity.
+Sanity Studio v5 plugin that syncs Vimeo videos into Sanity as first-class `vimeoVideo` documents and provides a custom reference field with a visual picker. Videos are fetched from the Vimeo API and stored/updated via `createOrReplace`.
 
 ## Commands
 
@@ -20,17 +20,30 @@ Package manager is **pnpm**. No test suite exists.
 
 Built with `@sanity/plugin-kit` and `@sanity/pkg-utils`. Entry point: `src/index.ts`.
 
-- **`src/index.ts`** — `definePlugin` entry. Merges user config (accessToken), registers the `vimeo` schema type with a custom input component.
-- **`src/schema.ts`** — Standalone `vimeo` type definition (currently unused; the actual schema is defined inline in `index.ts`).
-- **`src/plugin.tsx`** — Alternate rendering wrapper (currently unused by the main plugin export).
-- **`src/components/VideoInput.tsx`** — Custom input component. Shows `DataFetcher` when no value; displays thumbnail/title/ID and a reset button when populated.
-- **`src/components/DataFetcher.tsx`** — Handles Vimeo ID input and API fetch. Calls `https://api.vimeo.com/videos/{id}` with Bearer token auth. Supports extending default fields via `options.fields` on the schema field.
-- **`src/utils/types.ts`** — Shared TypeScript interfaces (`Config`, `VimeoFieldInput`).
+### Exports (from `src/index.ts`)
 
-The plugin config accepts `accessToken` (from env var `SANITY_STUDIO_VIMEO_ACCESS_TOKEN`). Schema field `options.fields` allows extending the default Vimeo API response fields.
+- **`vimeoFieldPlugin`** — `definePlugin` that registers the hidden `vimeoVideo` document type. Goes in `sanity.config.ts` plugins array.
+- **`vimeoField(fieldOptions?)`** — Returns a `reference` field definition pointing to `vimeoVideo` with the custom `VimeoReferenceInput` component. Goes in a document's fields array. Accepts optional overrides for name, title, validation, etc.
+- **`syncVimeoVideos(accessToken, client)`** — Fetches all videos from `GET /me/videos` (paginated), upserts them as `vimeoVideo` documents. Returns `{ synced, errors }`.
+- **`refreshSingleVideo(vimeoId, accessToken, client)`** — Fetches and upserts a single video by ID.
+- **`vimeoVideoType`** — The raw Sanity document type definition, re-exported for advanced use.
+- **`VimeoVideo`** — TypeScript type for the `vimeoVideo` document shape, for frontend use.
+
+### Source files
+
+- **`src/schema/vimeoVideo.ts`** — `vimeoVideo` document type definition (vimeoId, name, duration, privacy, lastSynced, pictures, play). Uses `liveEdit: true`.
+- **`src/lib/syncVimeoVideos.ts`** — Sync engine. `syncVimeoVideos` paginates through `GET /me/videos`, maps responses to document shape, and batches upserts in a single transaction. `refreshSingleVideo` fetches and upserts one video.
+- **`src/components/VimeoReferenceInput.tsx`** — Custom input component for the reference field. Empty state shows "Select Video" button; populated state shows thumbnail, title, privacy badge, duration, lastSynced, with Change/Refresh/Remove actions. The picker dialog queries existing `vimeoVideo` documents and has a manual "Sync from Vimeo" button.
+- **`src/utils/types.ts`** — `VimeoVideo` TypeScript interface for the document shape.
+
+### Key patterns
+
+- Vimeo access token is stored via `@sanity/studio-secrets` (namespace `vimeo`), not environment variables.
+- Document IDs are deterministic: `vimeoVideo-{numericVimeoId}`.
+- The Vimeo API fields requested: `uri,name,duration,created_time,pictures,play,privacy.view`.
+- Array items in Sanity documents use `_key` fields (e.g. `{width}x{height}` for picture sizes).
 
 ## Notes
 
-- Several source files use `@ts-nocheck`; TypeScript checking is also disabled in plugin-kit verification (`sanityPlugin.verifyPackage.tsc: false`).
-- `src/schema.ts` and `src/plugin.tsx` appear to be leftover/unused — the active schema and component wiring is all in `src/index.ts`.
+- `VimeoReferenceInput.tsx` uses `@ts-nocheck`; TypeScript checking is disabled in plugin-kit verification (`sanityPlugin.verifyPackage.tsc: false`).
 - Build output goes to `dist/` (CJS + ESM + types).
