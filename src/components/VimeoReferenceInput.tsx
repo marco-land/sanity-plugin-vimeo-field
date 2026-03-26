@@ -465,9 +465,14 @@ export function VimeoReferenceInput(
                       )}
                       <Box padding={2}>
                         <Stack space={2}>
-                          <Text size={1} weight="semibold" textOverflow="ellipsis">
-                            {doc.name}
-                          </Text>
+                          <Inline space={2}>
+                            <Text size={1} weight="semibold" textOverflow="ellipsis">
+                              {doc.name}
+                            </Text>
+                            <Badge tone={privacyTone(doc.privacy)} fontSize={0}>
+                              {privacyLabel(doc.privacy)}
+                            </Badge>
+                          </Inline>
                           <Inline space={2}>
                             {doc.duration !== null && doc.duration !== undefined && (
                               <Text size={0} muted>
