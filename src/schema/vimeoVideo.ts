@@ -56,6 +56,24 @@ export const vimeoVideoType = defineType({
       ],
     }),
     defineField({
+      name: 'files',
+      title: 'Files',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            defineField({name: 'quality', title: 'Quality', type: 'string'}),
+            defineField({name: 'type', title: 'Type', type: 'string'}),
+            defineField({name: 'width', title: 'Width', type: 'number'}),
+            defineField({name: 'height', title: 'Height', type: 'number'}),
+            defineField({name: 'link', title: 'Link', type: 'url'}),
+            defineField({name: 'size', title: 'Size', type: 'number'}),
+          ],
+        },
+      ],
+    }),
+    defineField({
       name: 'play',
       title: 'Play',
       type: 'object',

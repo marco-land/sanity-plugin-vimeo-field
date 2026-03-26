@@ -14,12 +14,22 @@ interface VimeoProgressive {
   link: string
 }
 
+interface VimeoFile {
+  quality: string
+  type: string
+  width: number
+  height: number
+  link: string
+  size: number
+}
+
 interface VimeoApiVideo {
   uri: string
   name: string
   duration: number
   privacy?: {view?: string}
   pictures: {sizes: VimeoSize[]}
+  files?: VimeoFile[]
   play?: {
     progressive?: VimeoProgressive[]
     dash?: {link: string}
@@ -68,6 +78,18 @@ function mapVideoToDocument(video: VimeoApiVideo) {
         })),
       }
       : undefined,
+    files: video.files?.length
+      ? video.files.map((f) => ({
+        _type: 'object' as const,
+        _key: `${f.quality}-${f.width}x${f.height}`,
+        quality: f.quality,
+        type: f.type,
+        width: f.width,
+        height: f.height,
+        link: f.link,
+        size: f.size,
+      }))
+      : undefined,
     play: video.play
       ? {
         _type: 'object' as const,
@@ -89,7 +111,7 @@ function mapVideoToDocument(video: VimeoApiVideo) {
   }
 }
 
-const API_FIELDS = 'uri,name,duration,created_time,pictures,play,privacy.view'
+const API_FIELDS = 'uri,name,duration,created_time,pictures,files,play,privacy.view'
 const BASE_URL = 'https://api.vimeo.com'
 
 async function fetchAllVideos(accessToken: string): Promise<VimeoApiVideo[]> {

@@ -12,6 +12,15 @@ export interface VimeoVideoProgressive {
   link: string
 }
 
+export interface VimeoVideoFile {
+  quality: string
+  type: string
+  width: number
+  height: number
+  link: string
+  size: number
+}
+
 export interface VimeoVideoPlay {
   progressive?: VimeoVideoProgressive[]
   dash?: {link: string}
@@ -29,5 +38,6 @@ export interface VimeoVideo {
   pictures?: {
     sizes?: VimeoVideoSize[]
   }
+  files?: VimeoVideoFile[]
   play?: VimeoVideoPlay
 }

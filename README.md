@@ -92,11 +92,14 @@ Each synced video is stored as a document with this shape:
 | `privacy`    | `string`   | Privacy setting — `anybody`, `nobody`, `unlisted`, etc. |
 | `lastSynced` | `datetime` | When this document was last synced              |
 | `pictures`   | `object`   | Thumbnail sizes (array of `{width, height, link}`) |
+| `files`      | `array`    | Video file downloads — `{quality, type, width, height, link, size}` |
 | `play`       | `object`   | Playback links — `progressive[]`, `dash`, `hls` |
 
 Documents use the ID format `vimeoVideo-{vimeoId}` and have `liveEdit: true` (no draft/publish workflow).
 
-> **Note:** The `play` field (progressive/HLS/DASH direct links) requires a Vimeo account with API access to direct video file links (Pro plan or above). On free/basic accounts this field will be empty.
+> **Note:** The `files` and `play` fields require a Vimeo account with API access to direct video file links (Pro plan or above). On free/basic accounts these fields will be empty.
+
+> **Important:** The `play` links (progressive/HLS/DASH) are short-lived and will expire after a few hours. They are not suitable for use in production frontends. Use the `files` field instead — it contains persistent direct MP4 download URLs that do not expire.
 
 ## Querying in the frontend
 
@@ -111,7 +114,8 @@ The field stores a reference, so you need to dereference it in your GROQ query:
     duration,
     privacy,
     "thumbnail": pictures.sizes[0].link,
-    play
+    "mp4": files[quality == "hd"][0].link,
+    files
   }
 }
 ```
