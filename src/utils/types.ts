@@ -33,6 +33,8 @@ export interface VimeoVideo {
   vimeoId: string
   name: string
   duration?: number
+  width?: number
+  height?: number
   privacy?: string
   lastSynced?: string
   pictures?: {

@@ -27,6 +27,8 @@ interface VimeoApiVideo {
   uri: string
   name: string
   duration: number
+  width: number
+  height: number
   privacy?: {view?: string}
   pictures: {sizes: VimeoSize[]}
   files?: VimeoFile[]
@@ -64,6 +66,8 @@ function mapVideoToDocument(video: VimeoApiVideo) {
     vimeoId,
     name: video.name,
     duration: video.duration,
+    width: video.width,
+    height: video.height,
     privacy: video.privacy?.view ?? undefined,
     lastSynced: new Date().toISOString(),
     pictures: video.pictures
@@ -111,7 +115,7 @@ function mapVideoToDocument(video: VimeoApiVideo) {
   }
 }
 
-const API_FIELDS = 'uri,name,duration,created_time,pictures,files,play,privacy.view'
+const API_FIELDS = 'uri,name,duration,width,height,created_time,pictures,files,play,privacy.view'
 const BASE_URL = 'https://api.vimeo.com'
 
 async function fetchAllVideos(accessToken: string): Promise<VimeoApiVideo[]> {

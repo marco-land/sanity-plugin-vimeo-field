@@ -89,6 +89,8 @@ Each synced video is stored as a document with this shape:
 | `vimeoId`    | `string`   | Numeric Vimeo video ID                         |
 | `name`       | `string`   | Video title                                    |
 | `duration`   | `number`   | Duration in seconds                            |
+| `width`      | `number`   | Video width in pixels                          |
+| `height`     | `number`   | Video height in pixels                         |
 | `privacy`    | `string`   | Privacy setting — `anybody`, `nobody`, `unlisted`, etc. |
 | `lastSynced` | `datetime` | When this document was last synced              |
 | `pictures`   | `object`   | Thumbnail sizes (array of `{width, height, link}`) |
@@ -112,6 +114,8 @@ The field stores a reference, so you need to dereference it in your GROQ query:
     vimeoId,
     name,
     duration,
+    width,
+    height,
     privacy,
     "thumbnail": pictures.sizes[0].link,
     "mp4": files[quality == "hd"][0].link,

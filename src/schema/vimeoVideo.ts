@@ -24,6 +24,16 @@ export const vimeoVideoType = defineType({
       type: 'number',
     }),
     defineField({
+      name: 'width',
+      title: 'Width',
+      type: 'number',
+    }),
+    defineField({
+      name: 'height',
+      title: 'Height',
+      type: 'number',
+    }),
+    defineField({
       name: 'privacy',
       title: 'Privacy',
       type: 'string',
