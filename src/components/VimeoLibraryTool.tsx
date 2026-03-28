@@ -1,7 +1,7 @@
 import {SettingsView, useSecrets} from '@sanity/studio-secrets'
-import {Box, Flex, Spinner} from '@sanity/ui'
+import {Box, Button, Card, Flex, Spinner, Stack, Text} from '@sanity/ui'
 import type {ReactElement} from 'react'
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
 
 import {VimeoVideoGrid} from './VimeoVideoGrid'
 
@@ -17,7 +17,7 @@ export function VimeoLibraryTool(): ReactElement {
   const accessToken = secrets?.accessToken
   const [showSettings, setShowSettings] = useState(false)
 
-  if (showSettings || (!loading && !accessToken)) {
+  if (showSettings) {
     return (
       <Box padding={4}>
         <SettingsView
@@ -35,6 +35,23 @@ export function VimeoLibraryTool(): ReactElement {
       <Flex justify="center" padding={5}>
         <Spinner muted />
       </Flex>
+    )
+  }
+
+  if (!accessToken) {
+    return (
+      <Box padding={4}>
+        <Card padding={4} tone="caution" radius={2} border>
+          <Stack space={3}>
+            <Text size={1}>No Vimeo access token configured. Add your token to start syncing videos.</Text>
+            <Button
+              text="Configure Access Token"
+              tone="primary"
+              onClick={() => setShowSettings(true)}
+            />
+          </Stack>
+        </Card>
+      </Box>
     )
   }
 

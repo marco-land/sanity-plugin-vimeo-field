@@ -110,7 +110,7 @@ export function VimeoReferenceInput(
     setConfirmRemove(false)
   }, [onChange])
 
-  if (showSettings || (!secretsLoading && !accessToken)) {
+  if (showSettings) {
     return (
       <SettingsView
         title="Vimeo Credentials"
@@ -118,6 +118,21 @@ export function VimeoReferenceInput(
         keys={SECRET_KEYS}
         onClose={() => setShowSettings(false)}
       />
+    )
+  }
+
+  if (!secretsLoading && !accessToken) {
+    return (
+      <Card padding={3} border radius={2} tone="caution">
+        <Stack space={3}>
+          <Text size={1}>No Vimeo access token configured.</Text>
+          <Button
+            text="Configure Access Token"
+            tone="primary"
+            onClick={() => setShowSettings(true)}
+          />
+        </Stack>
+      </Card>
     )
   }
 
