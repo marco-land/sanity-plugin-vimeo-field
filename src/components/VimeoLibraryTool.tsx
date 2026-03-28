@@ -1,7 +1,7 @@
 import {SettingsView, useSecrets} from '@sanity/studio-secrets'
 import {Box, Button, Card, Flex, Spinner, Stack, Text} from '@sanity/ui'
 import type {ReactElement} from 'react'
-import {useEffect, useState} from 'react'
+import {useState} from 'react'
 
 import {VimeoVideoGrid} from './VimeoVideoGrid'
 
