@@ -7,6 +7,8 @@
 
 Syncs your Vimeo video library into Sanity as first-class documents and provides a reference field with a visual picker.
 
+<img style="width: 100%; height: auto;" width="2494" height="1928" alt="Sanity Vimeo Field Plugin" src="https://github.com/user-attachments/assets/d6ee6045-7326-4445-8205-97d4cdac4e52" />
+
 ## Installation
 
 ```sh
