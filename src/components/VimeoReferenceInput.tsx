@@ -232,13 +232,6 @@ export function VimeoReferenceInput(
                 onClick={() => setConfirmRemove(true)}
               />
             )}
-            <Button
-              text="Configure Vimeo Token"
-              mode="ghost"
-              tone="default"
-              fontSize={1}
-              onClick={() => setShowSettings(true)}
-            />
           </Inline>
         </Stack>
 
@@ -250,7 +243,7 @@ export function VimeoReferenceInput(
             width={3}
           >
             <Box padding={4}>
-              <VimeoVideoGrid onSelect={handleSelect} selectedId={refId} />
+              <VimeoVideoGrid onSelect={handleSelect} selectedId={refId} onConfigureToken={() => setShowSettings(true)} />
             </Box>
           </Dialog>
         )}
@@ -262,15 +255,6 @@ export function VimeoReferenceInput(
   return (
     <Stack space={3}>
       <Button text="Select Video" icon={SearchIcon} tone="primary" onClick={handleOpen} />
-      <Inline>
-        <Button
-          text="Configure Vimeo Token"
-          mode="ghost"
-          tone="default"
-          fontSize={1}
-          onClick={() => setShowSettings(true)}
-        />
-      </Inline>
 
       {dialogOpen && (
         <Dialog
@@ -280,7 +264,7 @@ export function VimeoReferenceInput(
           width={3}
         >
           <Box padding={4}>
-            <VimeoVideoGrid onSelect={handleSelect} selectedId={refId} />
+            <VimeoVideoGrid onSelect={handleSelect} selectedId={refId} onConfigureToken={() => setShowSettings(true)} />
           </Box>
         </Dialog>
       )}

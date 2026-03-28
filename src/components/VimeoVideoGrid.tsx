@@ -1,4 +1,4 @@
-import {PlayIcon, SearchIcon, SyncIcon} from '@sanity/icons'
+import {CogIcon, PlayIcon, SearchIcon, SyncIcon} from '@sanity/icons'
 import {useSecrets} from '@sanity/studio-secrets'
 import {
   Badge,
@@ -32,6 +32,7 @@ interface VimeoVideoGridProps {
   columns?: number[]
   gap?: number | number[]
   showVideo?: boolean
+  onConfigureToken?: () => void
 }
 
 export function formatDuration(seconds: number): string {
@@ -108,6 +109,7 @@ export function VimeoVideoGrid({
   columns = [1, 2, 3, 4],
   gap = 3,
   showVideo = false,
+  onConfigureToken,
 }: VimeoVideoGridProps): ReactElement {
   const client = useClient({apiVersion: '2024-01-01'})
   const {secrets} = useSecrets<VimeoSecrets>(NAMESPACE)
@@ -198,6 +200,17 @@ export function VimeoVideoGrid({
           style={{flexShrink: 0}}
         />
         {syncing && <Spinner muted />}
+        {onConfigureToken && (
+          <Button
+            text="Configure Access Token"
+            icon={CogIcon}
+            mode="ghost"
+            tone="default"
+            fontSize={1}
+            onClick={onConfigureToken}
+            style={{flexShrink: 0}}
+          />
+        )}
       </Flex>
 
       {loadingVideos && !videos.length && (

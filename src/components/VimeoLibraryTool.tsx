@@ -1,5 +1,5 @@
 import {SettingsView, useSecrets} from '@sanity/studio-secrets'
-import {Box, Button, Flex, Spinner, Stack} from '@sanity/ui'
+import {Box, Flex, Spinner} from '@sanity/ui'
 import type {ReactElement} from 'react'
 import {useState} from 'react'
 
@@ -40,18 +40,7 @@ export function VimeoLibraryTool(): ReactElement {
 
   return (
     <Box padding={4}>
-      <Stack space={4}>
-        <VimeoVideoGrid columns={[1, 2, 4, 6]} gap={4} showVideo />
-        <Flex>
-          <Button
-            text="Configure Vimeo Token"
-            mode="ghost"
-            tone="default"
-            fontSize={1}
-            onClick={() => setShowSettings(true)}
-          />
-        </Flex>
-      </Stack>
+      <VimeoVideoGrid columns={[1, 2, 4, 6]} gap={4} showVideo onConfigureToken={() => setShowSettings(true)} />
     </Box>
   )
 }
