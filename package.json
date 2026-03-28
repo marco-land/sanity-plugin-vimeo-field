@@ -60,6 +60,7 @@
     "eslint-config-sanity": "^7.1.4",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
     "react": "^18",
     "react-dom": "^18",
     "react-is": "^18",
