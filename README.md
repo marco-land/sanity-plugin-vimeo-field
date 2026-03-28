@@ -80,6 +80,22 @@ To create a token, go to [developer.vimeo.com/apps](https://developer.vimeo.com/
 
 Videos are stored as hidden `vimeoVideo` documents in your dataset. The `vimeoField` type is an object that contains a reference to these documents.
 
+### Vimeo Library tool
+
+<img style="width: 100%; height: auto;" width="3176" height="1956" alt="Sanity Vimeo Field Plugin" src="https://github.com/user-attachments/assets/3ae6ab7e-e53a-45f0-aee1-350433adbca3" />
+
+The plugin adds a **Vimeo Library** tool to the Studio sidebar. It provides a searchable, browsable grid of all synced videos with inline video playback. From here you can:
+
+- **Search** videos by name or Vimeo ID.
+- **Sync from Vimeo** to fetch your full Vimeo library and upsert documents.
+- **Configure Access Token** to update your Vimeo API credentials.
+
+### Vimeo field
+
+<img style="width: 100%; height: auto;" width="3176" height="1956" alt="Sanity Vimeo Field Plugin" src="https://github.com/user-attachments/assets/9dc4e1ad-5884-4a57-a9d3-efd924211413" />
+
+When using the `vimeoField` type in a document:
+
 - **Select Video** opens a picker dialog showing all synced videos.
 - **Sync from Vimeo** (in the picker) fetches your full Vimeo library and upserts documents.
 - **Refresh** (on the populated field) re-syncs just the selected video from the Vimeo API.
