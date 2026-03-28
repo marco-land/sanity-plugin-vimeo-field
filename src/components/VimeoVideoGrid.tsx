@@ -256,21 +256,24 @@ export function VimeoVideoGrid({
                 style={{cursor: onSelect ? 'pointer' : 'default', overflow: 'hidden'}}
                 onClick={onSelect ? () => onSelect(doc) : undefined}
               >
-                {videoSrc ? (
-                  <video
-                    src={videoSrc}
-                    controls
-                    preload="metadata"
-                    poster={thumb?.link}
-                    style={{width: '100%', height: 'auto', display: 'block'}}
-                  />
-                ) : thumb && (
-                  <img
-                    src={thumb.link}
-                    alt={doc.name}
-                    style={{width: '100%', height: 'auto', display: 'block'}}
-                  />
-                )}
+                <div style={{aspectRatio: '4/3', backgroundColor: '#000', position: 'relative'}}>
+                  {videoSrc ? (
+                    <video
+                      src={videoSrc}
+                      controls
+                      preload="metadata"
+                      poster={thumb?.link}
+                      style={{width: '100%', height: '100%', display: 'block', position: 'absolute', inset: 0, objectFit: 'contain'}}
+                    />
+                  ) : thumb && (
+                    <img
+                      src={thumb.link}
+                      alt={doc.name}
+                      style={{width: '100%', height: '100%', display: 'block', position: 'absolute', inset: 0, objectFit: 'contain'}}
+                    />
+                  )}
+                </div>
+
                 <Box padding={2}>
                   <Stack space={2}>
                     <Inline space={2}>
