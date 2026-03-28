@@ -41,7 +41,7 @@ export function VimeoLibraryTool(): ReactElement {
   return (
     <Box padding={4}>
       <Stack space={4}>
-        <VimeoVideoGrid columns={[1, 2, 4, 6]} gap={4} />
+        <VimeoVideoGrid columns={[1, 2, 4, 6]} gap={4} showVideo />
         <Flex>
           <Button
             text="Configure Vimeo Token"

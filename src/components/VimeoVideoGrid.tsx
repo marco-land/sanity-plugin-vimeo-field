@@ -31,6 +31,7 @@ interface VimeoVideoGridProps {
   selectedId?: string
   columns?: number[]
   gap?: number | number[]
+  showVideo?: boolean
 }
 
 export function formatDuration(seconds: number): string {
@@ -66,6 +67,15 @@ export function pickThumbnail(sizes?: {width: number; height: number; link: stri
   return best
 }
 
+function pickLowResVideo(doc: VimeoVideo): string | null {
+  const files = doc.files
+  if (!files?.length) {
+    return null
+  }
+  const sorted = [...files].sort((a, b) => a.width - b.width)
+  return sorted[0].link
+}
+
 export function privacyTone(privacy?: string) {
   switch (privacy) {
     case 'anybody':
@@ -97,6 +107,7 @@ export function VimeoVideoGrid({
   selectedId,
   columns = [1, 2, 3, 4],
   gap = 3,
+  showVideo = false,
 }: VimeoVideoGridProps): ReactElement {
   const client = useClient({apiVersion: '2024-01-01'})
   const {secrets} = useSecrets<VimeoSecrets>(NAMESPACE)
@@ -219,6 +230,9 @@ export function VimeoVideoGrid({
         <Grid columns={columns} gap={gap}>
           {filteredVideos.map((doc) => {
             const thumb = pickThumbnail(doc.pictures?.sizes)
+            const videoSrc = showVideo
+              ? pickLowResVideo(doc)
+              : null
             const isSelected = selectedId === doc._id
             return (
               <Card
@@ -229,7 +243,15 @@ export function VimeoVideoGrid({
                 style={{cursor: onSelect ? 'pointer' : 'default', overflow: 'hidden'}}
                 onClick={onSelect ? () => onSelect(doc) : undefined}
               >
-                {thumb && (
+                {videoSrc ? (
+                  <video
+                    src={videoSrc}
+                    controls
+                    preload="metadata"
+                    poster={thumb?.link}
+                    style={{width: '100%', height: 'auto', display: 'block'}}
+                  />
+                ) : thumb && (
                   <img
                     src={thumb.link}
                     alt={doc.name}
