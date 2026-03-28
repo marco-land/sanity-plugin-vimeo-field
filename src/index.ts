@@ -1,42 +1,29 @@
-import type {FieldDefinitionBase, ReferenceDefinition, Template} from 'sanity'
-import {defineField, definePlugin} from 'sanity'
+import type {Template} from 'sanity'
+import {definePlugin} from 'sanity'
 
-import {VimeoReferenceInput} from './components/VimeoReferenceInput'
+import {vimeoFieldType} from './schema/vimeoField'
 import {vimeoVideoType} from './schema/vimeoVideo'
 
 export {refreshSingleVideo, syncVimeoVideos} from './lib/syncVimeoVideos'
+export {vimeoFieldType} from './schema/vimeoField'
 export {vimeoVideoType} from './schema/vimeoVideo'
 export type {VimeoVideo} from './utils/types'
 
 /**
- * Registers the `vimeoVideo` document type with Sanity.
+ * Registers the `vimeoVideo` document type and `vimeoField` object type with Sanity.
  * Add this to your `sanity.config.ts` plugins array.
+ *
+ * Usage in a document schema:
+ * ```ts
+ * defineField({ type: 'vimeoField', name: 'myVideo' })
+ * ```
  */
 export const vimeoFieldPlugin = definePlugin(() => {
   return {
     name: 'sanity-plugin-vimeo-field',
     schema: {
-      types: [vimeoVideoType],
+      types: [vimeoVideoType, vimeoFieldType],
       templates: (prev: Template[]) => prev.filter((t) => t.schemaType !== 'vimeoVideo'),
     },
   }
-})
-
-/**
- * Returns a reference field definition pointing to `vimeoVideo`
- * with the custom Vimeo picker input component.
- * Use this inside a document's fields array.
- */
-export const vimeoField = (
-  fieldOptions?: Partial<Omit<FieldDefinitionBase, 'type'>> &
-    Partial<Pick<ReferenceDefinition, 'options'>>,
-) => defineField({
-  name: 'vimeo',
-  title: 'Vimeo Video',
-  ...fieldOptions,
-  type: 'reference',
-  to: [{type: 'vimeoVideo'}],
-  components: {
-    input: VimeoReferenceInput,
-  },
 })

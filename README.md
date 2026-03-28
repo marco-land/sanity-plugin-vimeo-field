@@ -19,13 +19,6 @@ pnpm add sanity-plugin-vimeo-field
 
 ## Setup
 
-The plugin exposes two main exports:
-
-| Export             | Purpose                                                            |
-| ------------------ | ------------------------------------------------------------------ |
-| `vimeoFieldPlugin` | Registers the hidden `vimeoVideo` document type. Add to `plugins`. |
-| `vimeoField`       | Returns a `reference` field pointing to `vimeoVideo`. Add to a document's `fields`. |
-
 ### 1. Register the plugin
 
 ```ts
@@ -41,21 +34,32 @@ export default defineConfig({
 
 ### 2. Add a Vimeo field to a document
 
+Use the `vimeoField` type in any document's fields array. All standard field options (`hidden`, `readOnly`, `group`, `validation`, etc.) work as expected.
+
 ```ts
 // schemas/movie.ts
-import {defineType} from 'sanity'
-import {vimeoField} from 'sanity-plugin-vimeo-field'
+import {defineField, defineType} from 'sanity'
 
 export default defineType({
   name: 'movie',
   title: 'Movie',
   type: 'document',
   fields: [
-    // Uses defaults: name 'vimeo', title 'Vimeo Video'
-    vimeoField(),
+    defineField({
+      type: 'vimeoField',
+      name: 'trailer',
+      title: 'Trailer',
+    }),
 
-    // Or override name, title, validation, etc.
-    vimeoField({name: 'trailer', title: 'Trailer'}),
+    // With standard field options
+    defineField({
+      type: 'vimeoField',
+      name: 'behindTheScenes',
+      title: 'Behind the Scenes',
+      hidden: ({document}) => !document?.title,
+      readOnly: true,
+      group: 'media',
+    }),
   ],
 })
 ```
@@ -74,7 +78,7 @@ To create a token, go to [developer.vimeo.com/apps](https://developer.vimeo.com/
 
 ## How it works
 
-Videos are stored as hidden `vimeoVideo` documents in your dataset. The field is a standard Sanity `reference` to these documents.
+Videos are stored as hidden `vimeoVideo` documents in your dataset. The `vimeoField` type is an object that contains a reference to these documents.
 
 - **Select Video** opens a picker dialog showing all synced videos.
 - **Sync from Vimeo** (in the picker) fetches your full Vimeo library and upserts documents.
@@ -105,21 +109,23 @@ Documents use the ID format `vimeoVideo-{vimeoId}` and have `liveEdit: true` (no
 
 ## Querying in the frontend
 
-The field stores a reference, so you need to dereference it in your GROQ query:
+The field stores a reference inside an object, so you need to dereference the nested `asset` field in your GROQ query:
 
 ```groq
 *[_type == "movie"][0] {
   title,
-  vimeo-> {
-    vimeoId,
-    name,
-    duration,
-    width,
-    height,
-    privacy,
-    "thumbnail": pictures.sizes[0].link,
-    "mp4": files[quality == "hd"][0].link,
-    files
+  trailer {
+    asset-> {
+      vimeoId,
+      name,
+      duration,
+      width,
+      height,
+      privacy,
+      "thumbnail": pictures.sizes[0].link,
+      "mp4": files[quality == "hd"][0].link,
+      files
+    }
   }
 }
 ```
