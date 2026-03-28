@@ -263,13 +263,27 @@ export function VimeoVideoGrid({
                       controls
                       preload="metadata"
                       poster={thumb?.link}
-                      style={{width: '100%', height: '100%', display: 'block', position: 'absolute', inset: 0, objectFit: 'contain'}}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        display: 'block',
+                        position: 'absolute',
+                        inset: 0,
+                        objectFit: 'contain'
+                      }}
                     />
                   ) : thumb && (
                     <img
                       src={thumb.link}
                       alt={doc.name}
-                      style={{width: '100%', height: '100%', display: 'block', position: 'absolute', inset: 0, objectFit: 'contain'}}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        display: 'block',
+                        position: 'absolute',
+                        inset: 0,
+                        objectFit: 'contain'
+                      }}
                     />
                   )}
                 </div>

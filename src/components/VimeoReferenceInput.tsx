@@ -258,7 +258,11 @@ export function VimeoReferenceInput(
             width={3}
           >
             <Box padding={4}>
-              <VimeoVideoGrid onSelect={handleSelect} selectedId={refId} onConfigureToken={() => setShowSettings(true)} />
+              <VimeoVideoGrid
+                onSelect={handleSelect}
+                selectedId={refId}
+                onConfigureToken={() => setShowSettings(true)}
+              />
             </Box>
           </Dialog>
         )}
@@ -279,7 +283,11 @@ export function VimeoReferenceInput(
           width={3}
         >
           <Box padding={4}>
-            <VimeoVideoGrid onSelect={handleSelect} selectedId={refId} onConfigureToken={() => setShowSettings(true)} />
+            <VimeoVideoGrid
+              onSelect={handleSelect}
+              selectedId={refId}
+              onConfigureToken={() => setShowSettings(true)}
+            />
           </Box>
         </Dialog>
       )}

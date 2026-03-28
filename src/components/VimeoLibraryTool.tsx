@@ -43,7 +43,9 @@ export function VimeoLibraryTool(): ReactElement {
       <Box padding={4}>
         <Card padding={4} tone="caution" radius={2} border>
           <Stack space={3}>
-            <Text size={1}>No Vimeo access token configured. Add your token to start syncing videos.</Text>
+            <Text size={1}>
+              No Vimeo access token configured. Add your token to start syncing videos.
+            </Text>
             <Button
               text="Configure Access Token"
               tone="primary"
@@ -57,7 +59,12 @@ export function VimeoLibraryTool(): ReactElement {
 
   return (
     <Box padding={4}>
-      <VimeoVideoGrid columns={[1, 2, 4, 6]} gap={4} showVideo onConfigureToken={() => setShowSettings(true)} />
+      <VimeoVideoGrid
+        columns={[1, 2, 4, 6]}
+        gap={4}
+        showVideo
+        onConfigureToken={() => setShowSettings(true)}
+      />
     </Box>
   )
 }
