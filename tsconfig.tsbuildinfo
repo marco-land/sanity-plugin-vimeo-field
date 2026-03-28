@@ -1,1 +1,1 @@
-{"root":["./src/index.ts","./src/components/vimeoreferenceinput.tsx","./src/lib/syncvimeovideos.ts","./src/schema/vimeovideo.ts","./src/utils/types.ts","./package.config.ts"],"version":"5.9.3"}
+{"root":["./src/index.ts","./src/components/vimeolibrarytool.tsx","./src/components/vimeoreferenceinput.tsx","./src/components/vimeovideogrid.tsx","./src/lib/syncvimeovideos.ts","./src/schema/vimeofield.ts","./src/schema/vimeovideo.ts","./src/utils/types.ts","./package.config.ts"],"version":"5.9.3"}
