@@ -24,8 +24,8 @@ Built with `@sanity/plugin-kit` and `@sanity/pkg-utils`. Entry point: `src/index
 
 ### Exports (from `src/index.ts`)
 
-- **`vimeoFieldPlugin`** — `definePlugin` that registers the hidden `vimeoVideo` document type. Goes in `sanity.config.ts` plugins array.
-- **`vimeoField(fieldOptions?)`** — Returns a `reference` field definition pointing to `vimeoVideo` with the custom `VimeoReferenceInput` component. Goes in a document's fields array. Accepts optional overrides for name, title, validation, etc.
+- **`vimeoField`** — `definePlugin` that registers the hidden `vimeoVideo` document type. Goes in `sanity.config.ts` plugins array.
+- **`vimeoSchemaType`** — The `vimeo` object type definition (registered by the plugin). Contains a reference to `vimeoVideo` with the custom `VimeoReferenceInput` component. Used as `type: 'vimeo'` in a document's fields array.
 - **`syncVimeoVideos(accessToken, client)`** — Fetches all videos from `GET /me/videos` (paginated), upserts them as `vimeoVideo` documents. Returns `{ synced, errors }`.
 - **`refreshSingleVideo(vimeoId, accessToken, client)`** — Fetches and upserts a single video by ID.
 - **`vimeoVideoType`** — The raw Sanity document type definition, re-exported for advanced use.

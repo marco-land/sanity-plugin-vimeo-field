@@ -2,8 +2,8 @@ import {defineField, defineType} from 'sanity'
 
 import {VimeoReferenceInput} from '../components/VimeoReferenceInput'
 
-export const vimeoFieldType = defineType({
-  name: 'vimeoField',
+export const vimeoSchemaType = defineType({
+  name: 'vimeo',
   title: 'Vimeo Video',
   type: 'object',
   fields: [

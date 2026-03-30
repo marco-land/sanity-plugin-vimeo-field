@@ -26,17 +26,17 @@ pnpm add sanity-plugin-vimeo-field
 ```ts
 // sanity.config.ts
 import {defineConfig} from 'sanity'
-import {vimeoFieldPlugin} from 'sanity-plugin-vimeo-field'
+import {vimeoField} from 'sanity-plugin-vimeo-field'
 
 export default defineConfig({
   // ...
-  plugins: [vimeoFieldPlugin()],
+  plugins: [vimeoField()],
 })
 ```
 
 ### 2. Add a Vimeo field to a document
 
-Use the `vimeoField` type in any document's fields array. All standard field options (`hidden`, `readOnly`, `group`, `validation`, etc.) work as expected.
+Use the `vimeo` type in any document's fields array. All standard field options (`hidden`, `readOnly`, `group`, `validation`, etc.) work as expected.
 
 ```ts
 // schemas/movie.ts
@@ -48,14 +48,14 @@ export default defineType({
   type: 'document',
   fields: [
     defineField({
-      type: 'vimeoField',
+      type: 'vimeo',
       name: 'trailer',
       title: 'Trailer',
     }),
 
     // With standard field options
     defineField({
-      type: 'vimeoField',
+      type: 'vimeo',
       name: 'behindTheScenes',
       title: 'Behind the Scenes',
       hidden: ({document}) => !document?.title,
@@ -80,7 +80,7 @@ To create a token, go to [developer.vimeo.com/apps](https://developer.vimeo.com/
 
 ## How it works
 
-Videos are stored as hidden `vimeoVideo` documents in your dataset. The `vimeoField` type is an object that contains a reference to these documents.
+Videos are stored as hidden `vimeoVideo` documents in your dataset. The `vimeo` type is an object that contains a reference to these documents.
 
 ### Vimeo Library tool
 
@@ -96,7 +96,7 @@ The plugin adds a **Vimeo Library** tool to the Studio sidebar. It provides a se
 
 <img style="width: 100%; height: auto;" width="3176" height="1956" alt="Sanity Vimeo Field Plugin" src="https://github.com/user-attachments/assets/9dc4e1ad-5884-4a57-a9d3-efd924211413" />
 
-When using the `vimeoField` type in a document:
+When using the `vimeo` type in a document:
 
 - **Select Video** opens a picker dialog showing all synced videos.
 - **Sync from Vimeo** (in the picker) fetches your full Vimeo library and upserts documents.
@@ -155,6 +155,46 @@ Import the `VimeoVideo` type for use in your frontend code:
 ```ts
 import type {VimeoVideo} from 'sanity-plugin-vimeo-field'
 ```
+
+## Migrating from v3
+
+### `vimeoFieldPlugin` renamed to `vimeoField`
+
+The plugin export has been renamed. Update your config:
+
+```diff
+- import {vimeoFieldPlugin} from 'sanity-plugin-vimeo-field'
++ import {vimeoField} from 'sanity-plugin-vimeo-field'
+
+  export default defineConfig({
+-   plugins: [vimeoFieldPlugin()],
++   plugins: [vimeoField()],
+  })
+```
+
+### `vimeoField` type renamed to `vimeo`
+
+The field type name has been shortened. Update your schemas:
+
+```diff
+  defineField({
+-   type: 'vimeoField',
++   type: 'vimeo',
+    name: 'trailer',
+    title: 'Trailer',
+  })
+```
+
+### `vimeoFieldType` renamed to `vimeoSchemaType`
+
+If you import the raw schema type definition, update the import:
+
+```diff
+- import {vimeoFieldType} from 'sanity-plugin-vimeo-field'
++ import {vimeoSchemaType} from 'sanity-plugin-vimeo-field'
+```
+
+No data migration is needed — only code references change.
 
 ## License
 
