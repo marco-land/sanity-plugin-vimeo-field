@@ -156,7 +156,9 @@ Import the `VimeoVideo` type for use in your frontend code:
 import type {VimeoVideo} from 'sanity-plugin-vimeo-field'
 ```
 
-## Migrating from v3
+## Migrating from v2.x.x–3.1.0
+
+> **Note:** In versions 2.x.x–3.1.0 the plugin was exported as `vimeoFieldPlugin` and the field type was named `vimeoField`. Both have been renamed in the current version.
 
 ### `vimeoFieldPlugin` renamed to `vimeoField`
 
