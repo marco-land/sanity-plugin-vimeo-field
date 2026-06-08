@@ -116,6 +116,7 @@ function mapVideoToDocument(video: VimeoApiVideo) {
 }
 
 const API_FIELDS = 'uri,name,duration,width,height,created_time,pictures,files,play,privacy.view'
+const BATCH_SIZE = 25
 const BASE_URL = 'https://api.vimeo.com'
 
 async function fetchAllVideos(accessToken: string): Promise<VimeoApiVideo[]> {
@@ -149,18 +150,20 @@ export async function syncVimeoVideos(
 
   const videos = await fetchAllVideos(accessToken)
 
-  const transaction = client.transaction()
-  for (const video of videos) {
-    try {
-      const doc = mapVideoToDocument(video)
-      transaction.createOrReplace(doc)
-      synced++
-    } catch (err) {
-      errors.push(err instanceof Error ? err.message : String(err))
+  for (let i = 0; i < videos.length; i += BATCH_SIZE) {
+    const batch = videos.slice(i, i + BATCH_SIZE)
+    const transaction = client.transaction()
+    for (const video of batch) {
+      try {
+        const doc = mapVideoToDocument(video)
+        transaction.createOrReplace(doc)
+        synced++
+      } catch (err) {
+        errors.push(err instanceof Error ? err.message : String(err))
+      }
     }
+    await transaction.commit()
   }
-
-  await transaction.commit()
 
   return {synced, errors}
 }
