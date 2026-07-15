@@ -1,4 +1,7 @@
-import {CogIcon, PlayIcon, SearchIcon, SyncIcon} from '@sanity/icons'
+import {CogIcon} from '@sanity/icons/Cog'
+import {PlayIcon} from '@sanity/icons/Play'
+import {SearchIcon} from '@sanity/icons/Search'
+import {SyncIcon} from '@sanity/icons/Sync'
 import {useSecrets} from '@sanity/studio-secrets'
 import {
   Badge,

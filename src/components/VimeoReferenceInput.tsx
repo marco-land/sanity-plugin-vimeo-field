@@ -1,4 +1,6 @@
-import {SearchIcon, SyncIcon, TrashIcon} from '@sanity/icons'
+import {SearchIcon} from '@sanity/icons/Search'
+import {SyncIcon} from '@sanity/icons/Sync'
+import {TrashIcon} from '@sanity/icons/Trash'
 import {SettingsView, useSecrets} from '@sanity/studio-secrets'
 import {
   Badge,

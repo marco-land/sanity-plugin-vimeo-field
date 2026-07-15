@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@sanity/icons':
+        specifier: ^5
+        version: 5.1.0(react@18.3.1)
       '@sanity/incompatible-plugin':
         specifier: ^1.0.4
         version: 1.0.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -15,9 +18,6 @@ importers:
         specifier: ^4.0.2
         version: 4.0.2(@emotion/is-prop-valid@1.4.0)(react-dom@18.3.1(react@18.3.1))(react-is@18.3.1)(react@18.3.1)(sanity@5.18.0(@emotion/is-prop-valid@1.4.0)(@noble/hashes@2.0.1)(@oclif/core@4.10.2)(@sanity/cli-core@1.2.1(@noble/hashes@2.0.1)(@sanity/telemetry@0.8.1(react@19.2.4))(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.46.1)(yaml@2.8.3))(@types/node@25.5.0)(@types/react@18.3.28)(immer@10.2.0)(jiti@2.6.1)(lightningcss@1.32.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.3.12(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(terser@5.46.1)(ts-toolbelt@9.6.0)(typescript@5.9.3))(styled-components@6.3.12(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
     devDependencies:
-      '@sanity/icons':
-        specifier: ^3
-        version: 3.7.4(react@18.3.1)
       '@sanity/pkg-utils':
         specifier: ^10
         version: 10.4.13(@types/babel__core@7.20.5)(@types/node@25.5.0)(babel-plugin-react-compiler@1.0.0)(typescript@5.9.3)
@@ -2401,6 +2401,12 @@ packages:
     engines: {node: '>=14.0.0'}
     peerDependencies:
       react: ^18.3 || ^19.0.0-0
+
+  '@sanity/icons@5.1.0':
+    resolution: {integrity: sha512-BPvLFBWnxpXCn9XKb5OgBzNNRZJI29TXRpuSXx1/nKJ8FaYuitFmKSAD0L8jC0kF/BKKUMThaY3TYJ0UuubbTQ==}
+    engines: {node: '>=22.12'}
+    peerDependencies:
+      react: ^19
 
   '@sanity/id-utils@1.0.0':
     resolution: {integrity: sha512-2sb7tbdMDuUuVyocJPKG0gZBiOML/ovCe+mJiLrv1j69ODOfa2LfUjDVR+dRw/A/+XuxoJSSP8ebG7NiwTOgIA==}
@@ -9858,6 +9864,10 @@ snapshots:
   '@sanity/icons@3.7.4(react@19.2.4)':
     dependencies:
       react: 19.2.4
+
+  '@sanity/icons@5.1.0(react@18.3.1)':
+    dependencies:
+      react: 18.3.1
 
   '@sanity/id-utils@1.0.0':
     dependencies:

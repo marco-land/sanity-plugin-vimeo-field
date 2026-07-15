@@ -44,11 +44,11 @@
     "watch": "pkg-utils watch --strict"
   },
   "dependencies": {
+    "@sanity/icons": "^5",
     "@sanity/incompatible-plugin": "^1.0.4",
     "@sanity/studio-secrets": "^4.0.2"
   },
   "devDependencies": {
-    "@sanity/icons": "^3",
     "@sanity/pkg-utils": "^10",
     "@sanity/plugin-kit": "^4",
     "@sanity/ui": "^3",
@@ -70,7 +70,6 @@
     "typescript": "^5.3.3"
   },
   "peerDependencies": {
-    "@sanity/icons": ">=3",
     "@sanity/ui": ">=3",
     "react": ">=18",
     "sanity": ">=5"
