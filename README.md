@@ -90,6 +90,7 @@ The plugin adds a **Vimeo Library** tool to the Studio sidebar. It provides a se
 
 - **Search** videos by name or Vimeo ID.
 - **Sync from Vimeo** to fetch your full Vimeo library and upsert documents.
+- **Remove Stale** to bulk-delete videos that are no longer in your Vimeo library (see [Stale videos](#stale-videos)).
 - **Configure Access Token** to update your Vimeo API credentials.
 
 ### Vimeo field
@@ -101,6 +102,19 @@ When using the `vimeo` type in a document:
 - **Select Video** opens a picker dialog showing all synced videos.
 - **Sync from Vimeo** (in the picker) fetches your full Vimeo library and upserts documents.
 - **Refresh** (on the populated field) re-syncs just the selected video from the Vimeo API.
+
+References created by the field are **weak** (`_weak: true`), so referencing documents never block the deletion of `vimeoVideo` documents.
+
+### Stale videos
+
+When a sync runs, any existing `vimeoVideo` document that is no longer returned by the Vimeo API — because the video was deleted on Vimeo, or because you switched to a different access token/account — is marked with `stale: true` instead of silently lingering:
+
+- Stale videos show a red **Stale** badge in the Vimeo Library tool and the picker dialog.
+- A field referencing a stale video shows a caution state in the document form.
+- **Remove Stale** in the Vimeo Library tool bulk-deletes all stale documents. Documents that are still strongly referenced by other documents (e.g. references created before v3.3.0) are skipped and listed so you can unlink them first.
+- **Refresh** on a video that has been deleted from Vimeo marks it stale.
+
+A stale document that reappears in a later sync (e.g. you switch back to the original token) is automatically un-marked.
 
 ## The `vimeoVideo` document
 
@@ -115,6 +129,7 @@ Each synced video is stored as a document with this shape:
 | `height`     | `number`   | Video height in pixels                         |
 | `privacy`    | `string`   | Privacy setting — `anybody`, `nobody`, `unlisted`, etc. |
 | `lastSynced` | `datetime` | When this document was last synced              |
+| `stale`      | `boolean`  | `true` when the video was not found in the connected Vimeo account on the last sync |
 | `pictures`   | `object`   | Thumbnail sizes (array of `{width, height, link}`) |
 | `files`      | `array`    | Video file downloads — `{quality, type, width, height, link, size}` |
 | `play`       | `object`   | Playback links — `progressive[]`, `dash`, `hls` |

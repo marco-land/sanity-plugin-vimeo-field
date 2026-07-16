@@ -26,16 +26,20 @@ Built with `@sanity/plugin-kit` and `@sanity/pkg-utils`. Entry point: `src/index
 
 - **`vimeoField`** — `definePlugin` that registers the hidden `vimeoVideo` document type. Goes in `sanity.config.ts` plugins array.
 - **`vimeoSchemaType`** — The `vimeo` object type definition (registered by the plugin). Contains a reference to `vimeoVideo` with the custom `VimeoReferenceInput` component. Used as `type: 'vimeo'` in a document's fields array.
-- **`syncVimeoVideos(accessToken, client)`** — Fetches all videos from `GET /me/videos` (paginated), upserts them as `vimeoVideo` documents. Returns `{ synced, errors }`.
-- **`refreshSingleVideo(vimeoId, accessToken, client)`** — Fetches and upserts a single video by ID.
+- **`syncVimeoVideos(accessToken, client)`** — Fetches all videos from `GET /me/videos` (paginated), upserts them as `vimeoVideo` documents, and marks existing documents not returned by the API as `stale: true`. Returns `{ synced, stale, errors }`.
+- **`refreshSingleVideo(vimeoId, accessToken, client)`** — Fetches and upserts a single video by ID. On a 404 it marks the document stale and throws.
+- **`deleteStaleVideos(client)`** — Deletes all stale `vimeoVideo` documents; skips docs still referenced by other documents. Returns `{ deleted, skipped }`.
 - **`vimeoVideoType`** — The raw Sanity document type definition, re-exported for advanced use.
 - **`VimeoVideo`** — TypeScript type for the `vimeoVideo` document shape, for frontend use.
 
 ### Source files
 
-- **`src/schema/vimeoVideo.ts`** — `vimeoVideo` document type definition (vimeoId, name, duration, privacy, lastSynced, pictures, play). Uses `liveEdit: true`.
-- **`src/lib/syncVimeoVideos.ts`** — Sync engine. `syncVimeoVideos` paginates through `GET /me/videos`, maps responses to document shape, and batches upserts in a single transaction. `refreshSingleVideo` fetches and upserts one video.
-- **`src/components/VimeoReferenceInput.tsx`** — Custom input component for the reference field. Empty state shows "Select Video" button; populated state shows thumbnail, title, privacy badge, duration, lastSynced, with Change/Refresh/Remove actions. The picker dialog queries existing `vimeoVideo` documents and has a manual "Sync from Vimeo" button.
+- **`src/schema/vimeoVideo.ts`** — `vimeoVideo` document type definition (vimeoId, name, duration, privacy, lastSynced, stale, pictures, play). Uses `liveEdit: true`.
+- **`src/schema/vimeoField.ts`** — The `vimeo` object type. Its `asset` field is a **weak** reference to `vimeoVideo` with the custom `VimeoReferenceInput` component.
+- **`src/lib/syncVimeoVideos.ts`** — Sync engine. `syncVimeoVideos` paginates through `GET /me/videos`, maps responses to document shape, batches upserts in transactions, then marks documents missing from the API response as stale. `refreshSingleVideo` fetches and upserts one video. `deleteStaleVideos` bulk-deletes stale docs, skipping ones with inbound references.
+- **`src/components/VimeoReferenceInput.tsx`** — Custom input component for the reference field. Empty state shows "Select Video" button; populated state shows thumbnail, title, privacy badge, duration, lastSynced, with Change/Refresh/Remove actions (caution tone + "Stale" badge when the video is stale). Selecting a video writes a weak reference (`_weak: true`).
+- **`src/components/VimeoVideoGrid.tsx`** — Shared grid used by the picker dialog and the Vimeo Library tool. Search, "Sync from Vimeo", and "Remove Stale (N)" actions; stale videos get a critical "Stale" badge.
+- **`src/components/VimeoLibraryTool.tsx`** — Studio tool ("Vimeo Library") wrapping `VimeoVideoGrid` with token settings.
 - **`src/utils/types.ts`** — `VimeoVideo` TypeScript interface for the document shape.
 
 ### Key patterns

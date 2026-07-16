@@ -44,6 +44,12 @@ export const vimeoVideoType = defineType({
       type: 'datetime',
     }),
     defineField({
+      name: 'stale',
+      title: 'Stale',
+      description: 'No longer found in the connected Vimeo account after the last sync',
+      type: 'boolean',
+    }),
+    defineField({
       name: 'pictures',
       title: 'Pictures',
       type: 'object',
