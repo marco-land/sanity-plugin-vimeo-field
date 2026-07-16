@@ -101,7 +101,7 @@ export function VimeoReferenceInput(
 
   const handleSelect = useCallback(
     (doc: VimeoVideo) => {
-      onChange(set({_type: 'reference', _ref: doc._id}))
+      onChange(set({_type: 'reference', _ref: doc._id, _weak: true}))
       setDialogOpen(false)
     },
     [onChange],
@@ -181,7 +181,7 @@ export function VimeoReferenceInput(
     const thumb = pickThumbnail(resolved.pictures?.sizes)
 
     return (
-      <Card padding={3} border radius={2}>
+      <Card padding={3} border radius={2} tone={resolved.stale ? 'caution' : 'default'}>
         <Stack space={3}>
           <Flex gap={3} align="flex-start">
             {thumb && (
@@ -204,7 +204,17 @@ export function VimeoReferenceInput(
                 <Badge tone={privacyTone(resolved.privacy)} fontSize={0}>
                   {privacyLabel(resolved.privacy)}
                 </Badge>
+                {resolved.stale && (
+                  <Badge tone="critical" fontSize={0}>
+                    Stale
+                  </Badge>
+                )}
               </Inline>
+              {resolved.stale && (
+                <Text size={0} muted>
+                  This video was not found in the connected Vimeo account on the last sync.
+                </Text>
+              )}
               <Text size={0} muted>
                 ID: {resolved.vimeoId}
               </Text>
