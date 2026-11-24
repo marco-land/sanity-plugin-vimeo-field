@@ -4,19 +4,11 @@ import {SearchIcon} from '@sanity/icons/Search'
 import {SyncIcon} from '@sanity/icons/Sync'
 import {TrashIcon} from '@sanity/icons/Trash'
 import {useSecrets} from '@sanity/studio-secrets'
-import {
-  Badge,
-  Box,
-  Button,
-  Card,
-  Flex,
-  Grid,
-  Inline,
-  Spinner,
-  Stack,
-  Text,
-  TextInput,
-} from '@sanity/ui'
+// Layout note: @sanity/ui v4 (Sanity Studio v6) dropped `space` on Stack/Inline
+// and `columns` on Grid in favour of `gap` / `gridTemplateColumns`. To stay
+// compatible with both v3 and v4 we only use props that exist in both:
+// `Flex` + `gap` for stacks/rows and `Grid` + `gap` with an inline template.
+import {Badge, Box, Button, Card, Flex, Grid, Spinner, Text, TextInput} from '@sanity/ui'
 import type {ReactElement} from 'react'
 import {useCallback, useEffect, useMemo, useState} from 'react'
 import {useClient} from 'sanity'
@@ -33,8 +25,9 @@ interface VimeoSecrets {
 interface VimeoVideoGridProps {
   onSelect?: (doc: VimeoVideo) => void
   selectedId?: string
-  columns?: number[]
-  gap?: number | number[]
+  /** Minimum card width in px; the grid fits as many columns as the container allows. */
+  minCardWidth?: number
+  gap?: number
   showVideo?: boolean
   onConfigureToken?: () => void
 }
@@ -103,14 +96,23 @@ export function privacyLabel(privacy?: string): string {
     case 'unlisted':
       return 'Unlisted'
     default:
-      return privacy ?? 'Unknown'
+      return privacy ?? ''
   }
 }
+
+const fillStyle = {
+  width: '100%',
+  height: '100%',
+  display: 'block',
+  position: 'absolute',
+  inset: 0,
+  objectFit: 'cover',
+} as const
 
 export function VimeoVideoGrid({
   onSelect,
   selectedId,
-  columns = [1, 2, 3, 4],
+  minCardWidth = 220,
   gap = 3,
   showVideo = false,
   onConfigureToken,
@@ -204,9 +206,9 @@ export function VimeoVideoGrid({
   }, [videos, searchQuery])
 
   return (
-    <Stack space={4}>
-      <Flex align="center" gap={3}>
-        <Box style={{flex: 1}}>
+    <Flex direction="column" gap={4}>
+      <Flex align="center" gap={3} wrap="wrap">
+        <Box style={{flex: 1, minWidth: 200}}>
           <TextInput
             icon={SearchIcon}
             placeholder="Search by name or ID…"
@@ -232,7 +234,7 @@ export function VimeoVideoGrid({
         {syncing && <Spinner muted />}
         {staleCount > 0 &&
           (confirmRemoveStale ? (
-            <Inline space={2} style={{flexShrink: 0}}>
+            <Flex gap={2} style={{flexShrink: 0}}>
               <Button
                 text={`Confirm Remove (${staleCount})`}
                 tone="critical"
@@ -241,7 +243,7 @@ export function VimeoVideoGrid({
                 onClick={handleRemoveStale}
               />
               <Button text="Cancel" mode="ghost" onClick={() => setConfirmRemoveStale(false)} />
-            </Inline>
+            </Flex>
           ) : (
             <Button
               text={removingStale ? 'Removing…' : `Remove Stale (${staleCount})`}
@@ -304,89 +306,79 @@ export function VimeoVideoGrid({
       )}
 
       {filteredVideos.length > 0 && (
-        <Grid columns={columns} gap={gap}>
+        <Grid
+          gap={gap}
+          style={{
+            gridTemplateColumns: `repeat(auto-fill, minmax(min(${minCardWidth}px, 100%), 1fr))`,
+          }}
+        >
           {filteredVideos.map((doc) => {
             const thumb = pickThumbnail(doc.pictures?.sizes)
-            const videoSrc = showVideo
-              ? pickLowResVideo(doc)
-              : null
+            const videoSrc = showVideo ? pickLowResVideo(doc) : null
             const isSelected = selectedId === doc._id
+            const privacy = privacyLabel(doc.privacy)
             return (
               <Card
                 key={doc._id}
                 radius={2}
                 shadow={1}
                 tone={isSelected ? 'primary' : 'default'}
-                style={{cursor: onSelect ? 'pointer' : 'default', overflow: 'hidden'}}
+                style={{cursor: onSelect ? 'pointer' : 'default', overflow: 'hidden', minWidth: 0}}
                 onClick={onSelect ? () => onSelect(doc) : undefined}
               >
-                <div style={{aspectRatio: '4/3', backgroundColor: '#000', position: 'relative'}}>
+                <div style={{aspectRatio: '16/9', backgroundColor: '#000', position: 'relative'}}>
                   {videoSrc ? (
                     <video
                       src={videoSrc}
                       controls
-                      preload="metadata"
+                      preload="none"
                       poster={thumb?.link}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        display: 'block',
-                        position: 'absolute',
-                        inset: 0,
-                        objectFit: 'contain'
-                      }}
+                      style={{...fillStyle, objectFit: 'contain'}}
                     />
-                  ) : thumb && (
-                    <img
-                      src={thumb.link}
-                      alt={doc.name}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        display: 'block',
-                        position: 'absolute',
-                        inset: 0,
-                        objectFit: 'contain'
-                      }}
-                    />
+                  ) : (
+                    thumb && (
+                      <img src={thumb.link} alt={doc.name} loading="lazy" style={fillStyle} />
+                    )
                   )}
                 </div>
 
-                <Box padding={2}>
-                  <Stack space={2}>
-                    <Inline space={2}>
-                      <Text size={1} weight="semibold" textOverflow="ellipsis">
-                        {doc.name}
-                      </Text>
+                <Flex direction="column" gap={2} padding={3}>
+                  <Text size={1} weight="semibold" textOverflow="ellipsis" title={doc.name}>
+                    {doc.name}
+                  </Text>
+                  <Flex gap={2} align="center" wrap="wrap">
+                    {privacy && (
                       <Badge tone={privacyTone(doc.privacy)} fontSize={0}>
-                        {privacyLabel(doc.privacy)}
+                        {privacy}
                       </Badge>
-                      {doc.stale && (
-                        <Badge tone="critical" fontSize={0}>
-                          Stale
-                        </Badge>
-                      )}
-                    </Inline>
-                    <Inline space={2}>
-                      {doc.duration !== null && doc.duration !== undefined && (
+                    )}
+                    {doc.stale && (
+                      <Badge tone="critical" fontSize={0}>
+                        Stale
+                      </Badge>
+                    )}
+                    {doc.duration !== null && doc.duration !== undefined && (
+                      <Flex gap={1} align="center">
                         <Text size={0} muted>
-                          <PlayIcon style={{verticalAlign: 'middle', marginRight: 2}} />
+                          <PlayIcon />
+                        </Text>
+                        <Text size={0} muted>
                           {formatDuration(doc.duration)}
                         </Text>
-                      )}
-                      {doc.lastSynced && (
-                        <Text size={0} muted>
-                          {formatDate(doc.lastSynced)}
-                        </Text>
-                      )}
-                    </Inline>
-                  </Stack>
-                </Box>
+                      </Flex>
+                    )}
+                  </Flex>
+                  {doc.lastSynced && (
+                    <Text size={0} muted textOverflow="ellipsis">
+                      Synced {formatDate(doc.lastSynced)}
+                    </Text>
+                  )}
+                </Flex>
               </Card>
             )
           })}
         </Grid>
       )}
-    </Stack>
+    </Flex>
   )
 }
