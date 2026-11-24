@@ -2,6 +2,7 @@ import {CogIcon} from '@sanity/icons/Cog'
 import {PlayIcon} from '@sanity/icons/Play'
 import {SearchIcon} from '@sanity/icons/Search'
 import {SyncIcon} from '@sanity/icons/Sync'
+import {TrashIcon} from '@sanity/icons/Trash'
 import {useSecrets} from '@sanity/studio-secrets'
 import {
   Badge,
@@ -20,7 +21,7 @@ import type {ReactElement} from 'react'
 import {useCallback, useEffect, useMemo, useState} from 'react'
 import {useClient} from 'sanity'
 
-import {syncVimeoVideos} from '../lib/syncVimeoVideos'
+import {deleteStaleVideos, syncVimeoVideos} from '../lib/syncVimeoVideos'
 import type {VimeoVideo} from '../utils/types'
 
 const NAMESPACE = 'vimeo'
@@ -124,6 +125,9 @@ export function VimeoVideoGrid({
   const [error, setError] = useState('')
   const [syncMessage, setSyncMessage] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+  const [removingStale, setRemovingStale] = useState(false)
+  const [confirmRemoveStale, setConfirmRemoveStale] = useState(false)
+  const [skippedStale, setSkippedStale] = useState<{id: string; name: string}[]>([])
 
   const loadVideos = useCallback(async () => {
     setLoadingVideos(true)
@@ -152,7 +156,10 @@ export function VimeoVideoGrid({
           `${result.errors.length} error(s): ${result.errors[0]}`
         setError(msg)
       } else {
-        setSyncMessage(`Synced ${result.synced} video${result.synced === 1 ? '' : 's'}`)
+        const staleSuffix = result.stale > 0 ? `, ${result.stale} marked stale` : ''
+        setSyncMessage(
+          `Synced ${result.synced} video${result.synced === 1 ? '' : 's'}${staleSuffix}`,
+        )
         setTimeout(() => setSyncMessage(''), 4000)
       }
     } catch (err) {
@@ -164,9 +171,29 @@ export function VimeoVideoGrid({
     await loadVideos()
   }, [accessToken, client, loadVideos])
 
+  const handleRemoveStale = useCallback(async () => {
+    setConfirmRemoveStale(false)
+    setError('')
+    setSyncMessage('')
+    setSkippedStale([])
+    setRemovingStale(true)
+    try {
+      const result = await deleteStaleVideos(client)
+      setSyncMessage(`Deleted ${result.deleted} stale video${result.deleted === 1 ? '' : 's'}`)
+      setTimeout(() => setSyncMessage(''), 4000)
+      setSkippedStale(result.skipped)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete stale videos')
+    }
+    setRemovingStale(false)
+    await loadVideos()
+  }, [client, loadVideos])
+
   useEffect(() => {
     loadVideos()
   }, [loadVideos])
+
+  const staleCount = useMemo(() => videos.filter((v) => v.stale).length, [videos])
 
   const filteredVideos = useMemo(() => {
     if (!searchQuery.trim()) {
@@ -203,6 +230,30 @@ export function VimeoVideoGrid({
           style={{flexShrink: 0}}
         />
         {syncing && <Spinner muted />}
+        {staleCount > 0 &&
+          (confirmRemoveStale ? (
+            <Inline space={2} style={{flexShrink: 0}}>
+              <Button
+                text={`Confirm Remove (${staleCount})`}
+                tone="critical"
+                mode="default"
+                disabled={removingStale}
+                onClick={handleRemoveStale}
+              />
+              <Button text="Cancel" mode="ghost" onClick={() => setConfirmRemoveStale(false)} />
+            </Inline>
+          ) : (
+            <Button
+              text={removingStale ? 'Removing…' : `Remove Stale (${staleCount})`}
+              icon={TrashIcon}
+              mode="ghost"
+              tone="critical"
+              disabled={removingStale}
+              onClick={() => setConfirmRemoveStale(true)}
+              style={{flexShrink: 0}}
+            />
+          ))}
+        {removingStale && <Spinner muted />}
         {onConfigureToken && (
           <Button
             text="Configure Access Token"
@@ -225,6 +276,16 @@ export function VimeoVideoGrid({
       {error && (
         <Card padding={3} tone="critical" radius={2}>
           <Text size={1}>{error}</Text>
+        </Card>
+      )}
+
+      {skippedStale.length > 0 && (
+        <Card padding={3} tone="caution" radius={2}>
+          <Text size={1}>
+            Skipped {skippedStale.length} stale video{skippedStale.length === 1 ? '' : 's'} still
+            referenced by other documents — unlink them first:{' '}
+            {skippedStale.map((s) => s.name).join(', ')}
+          </Text>
         </Card>
       )}
 
@@ -300,6 +361,11 @@ export function VimeoVideoGrid({
                       <Badge tone={privacyTone(doc.privacy)} fontSize={0}>
                         {privacyLabel(doc.privacy)}
                       </Badge>
+                      {doc.stale && (
+                        <Badge tone="critical" fontSize={0}>
+                          Stale
+                        </Badge>
+                      )}
                     </Inline>
                     <Inline space={2}>
                       {doc.duration !== null && doc.duration !== undefined && (

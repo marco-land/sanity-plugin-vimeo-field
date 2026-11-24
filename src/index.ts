@@ -5,7 +5,7 @@ import {VimeoLibraryTool} from './components/VimeoLibraryTool'
 import {vimeoSchemaType} from './schema/vimeoField'
 import {vimeoVideoType} from './schema/vimeoVideo'
 
-export {refreshSingleVideo, syncVimeoVideos} from './lib/syncVimeoVideos'
+export {deleteStaleVideos, refreshSingleVideo, syncVimeoVideos} from './lib/syncVimeoVideos'
 export {vimeoSchemaType} from './schema/vimeoField'
 export {vimeoVideoType} from './schema/vimeoVideo'
 export type {VimeoVideo} from './utils/types'

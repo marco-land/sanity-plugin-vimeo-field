@@ -37,6 +37,7 @@ export interface VimeoVideo {
   height?: number
   privacy?: string
   lastSynced?: string
+  stale?: boolean
   pictures?: {
     sizes?: VimeoVideoSize[]
   }

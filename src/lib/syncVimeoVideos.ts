@@ -46,7 +46,13 @@ interface VimeoPageResponse {
 
 export interface SyncResult {
   synced: number
+  stale: number
   errors: string[]
+}
+
+export interface DeleteStaleResult {
+  deleted: number
+  skipped: {id: string; name: string}[]
 }
 
 function extractVimeoId(uri: string): string {
@@ -149,6 +155,7 @@ export async function syncVimeoVideos(
   let synced = 0
 
   const videos = await fetchAllVideos(accessToken)
+  const freshIds = new Set<string>()
 
   for (let i = 0; i < videos.length; i += BATCH_SIZE) {
     const batch = videos.slice(i, i + BATCH_SIZE)
@@ -157,6 +164,7 @@ export async function syncVimeoVideos(
       try {
         const doc = mapVideoToDocument(video)
         transaction.createOrReplace(doc)
+        freshIds.add(doc._id)
         synced++
       } catch (err) {
         errors.push(err instanceof Error ? err.message : String(err))
@@ -165,7 +173,48 @@ export async function syncVimeoVideos(
     await transaction.commit()
   }
 
-  return {synced, errors}
+  const existingIds = await client.fetch<string[]>('*[_type == "vimeoVideo"]._id')
+  const staleIds = existingIds.filter((id) => !freshIds.has(id))
+
+  for (let i = 0; i < staleIds.length; i += BATCH_SIZE) {
+    const batch = staleIds.slice(i, i + BATCH_SIZE)
+    const transaction = client.transaction()
+    for (const id of batch) {
+      transaction.patch(id, {set: {stale: true}})
+    }
+    await transaction.commit()
+  }
+
+  return {synced, stale: staleIds.length, errors}
+}
+
+/**
+ * Deletes all `vimeoVideo` documents marked as stale.
+ * Documents that are still referenced by other documents are skipped
+ * and reported so the user can unlink them first.
+ */
+export async function deleteStaleVideos(client: SanityClient): Promise<DeleteStaleResult> {
+  const staleDocs = await client.fetch<{id: string; name: string; referenceCount: number}[]>(
+    `*[_type == "vimeoVideo" && stale == true]{
+      "id": _id, name, "referenceCount": count(*[references(^._id)])
+    }`,
+  )
+
+  const deletable = staleDocs.filter((doc) => doc.referenceCount === 0)
+  const skipped = staleDocs
+    .filter((doc) => doc.referenceCount > 0)
+    .map(({id, name}) => ({id, name}))
+
+  for (let i = 0; i < deletable.length; i += BATCH_SIZE) {
+    const batch = deletable.slice(i, i + BATCH_SIZE)
+    const transaction = client.transaction()
+    for (const doc of batch) {
+      transaction.delete(doc.id)
+    }
+    await transaction.commit()
+  }
+
+  return {deleted: deletable.length, skipped}
 }
 
 export async function refreshSingleVideo(
@@ -176,6 +225,11 @@ export async function refreshSingleVideo(
   const response = await fetch(`${BASE_URL}/videos/${vimeoId}?fields=${API_FIELDS}`, {
     headers: {Authorization: `Bearer ${accessToken}`},
   })
+
+  if (response.status === 404) {
+    await client.patch(`vimeoVideo-${vimeoId}`).set({stale: true}).commit()
+    throw new Error('Video no longer exists on Vimeo — marked as stale')
+  }
 
   if (!response.ok) {
     throw new Error(`Vimeo API error: ${response.status} ${response.statusText}`)

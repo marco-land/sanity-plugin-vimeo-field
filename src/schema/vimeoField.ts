@@ -15,6 +15,7 @@ export const vimeoSchemaType = defineType({
       name: 'asset',
       title: 'Asset',
       type: 'reference',
+      weak: true,
       to: [{type: 'vimeoVideo'}],
     }),
   ],
