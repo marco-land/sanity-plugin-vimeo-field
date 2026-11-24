@@ -1,5 +1,5 @@
 import {SettingsView, useSecrets} from '@sanity/studio-secrets'
-import {Box, Button, Card, Flex, Spinner, Stack, Text} from '@sanity/ui'
+import {Box, Button, Card, Flex, Spinner, Text} from '@sanity/ui'
 import type {ReactElement} from 'react'
 import {useState} from 'react'
 
@@ -42,7 +42,7 @@ export function VimeoLibraryTool(): ReactElement {
     return (
       <Box padding={4}>
         <Card padding={4} tone="caution" radius={2} border>
-          <Stack space={3}>
+          <Flex direction="column" gap={3}>
             <Text size={1}>
               No Vimeo access token configured. Add your token to start syncing videos.
             </Text>
@@ -51,7 +51,7 @@ export function VimeoLibraryTool(): ReactElement {
               tone="primary"
               onClick={() => setShowSettings(true)}
             />
-          </Stack>
+          </Flex>
         </Card>
       </Box>
     )
@@ -60,7 +60,7 @@ export function VimeoLibraryTool(): ReactElement {
   return (
     <Box padding={4}>
       <VimeoVideoGrid
-        columns={[1, 2, 4, 6]}
+        minCardWidth={260}
         gap={4}
         showVideo
         onConfigureToken={() => setShowSettings(true)}

@@ -2,18 +2,9 @@ import {SearchIcon} from '@sanity/icons/Search'
 import {SyncIcon} from '@sanity/icons/Sync'
 import {TrashIcon} from '@sanity/icons/Trash'
 import {SettingsView, useSecrets} from '@sanity/studio-secrets'
-import {
-  Badge,
-  Box,
-  Button,
-  Card,
-  Dialog,
-  Flex,
-  Inline,
-  Spinner,
-  Stack,
-  Text,
-} from '@sanity/ui'
+// Only layout props shared by @sanity/ui v3 and v4 are used here (`Flex` + `gap`).
+// v4 dropped `space` on Stack/Inline, which silently removed all spacing.
+import {Badge, Box, Button, Card, Dialog, Flex, Spinner, Text} from '@sanity/ui'
 import type {ReactElement} from 'react'
 import {useCallback, useEffect, useState} from 'react'
 import type {ObjectInputProps, Reference, ReferenceSchemaType} from 'sanity'
@@ -49,6 +40,7 @@ export function VimeoReferenceInput(
   const [showSettings, setShowSettings] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
+  const [refreshError, setRefreshError] = useState('')
 
   // Resolved referenced document
   const [resolved, setResolved] = useState<VimeoVideo | null>(null)
@@ -82,12 +74,14 @@ export function VimeoReferenceInput(
       return
     }
     setRefreshing(true)
+    setRefreshError('')
     try {
       await refreshSingleVideo(resolved.vimeoId, accessToken, client)
-      resolveRef(refId)
-    } catch {
-      // Silently fail — the user can see lastSynced didn't change
+    } catch (err) {
+      setRefreshError(err instanceof Error ? err.message : 'Refresh failed')
     }
+    // Re-resolve either way: a 404 marks the document stale.
+    resolveRef(refId)
     setRefreshing(false)
   }, [accessToken, client, resolved?.vimeoId, refId, resolveRef])
 
@@ -126,14 +120,14 @@ export function VimeoReferenceInput(
   if (!secretsLoading && !accessToken) {
     return (
       <Card padding={3} border radius={2} tone="caution">
-        <Stack space={3}>
+        <Flex direction="column" gap={3}>
           <Text size={1}>No Vimeo access token configured.</Text>
           <Button
             text="Configure Access Token"
             tone="primary"
             onClick={() => setShowSettings(true)}
           />
-        </Stack>
+        </Flex>
       </Card>
     )
   }
@@ -161,9 +155,9 @@ export function VimeoReferenceInput(
     if (!resolved) {
       return (
         <Card padding={4} border radius={2} tone="caution">
-          <Stack space={3}>
+          <Flex direction="column" gap={3}>
             <Text size={1}>Referenced video not found ({refId})</Text>
-            <Inline space={2}>
+            <Flex gap={2} wrap="wrap">
               <Button text="Change" icon={SearchIcon} mode="ghost" onClick={handleOpen} />
               <Button
                 text="Remove"
@@ -172,44 +166,52 @@ export function VimeoReferenceInput(
                 tone="critical"
                 onClick={() => onChange(unset())}
               />
-            </Inline>
-          </Stack>
+            </Flex>
+          </Flex>
         </Card>
       )
     }
 
     const thumb = pickThumbnail(resolved.pictures?.sizes)
+    const privacy = privacyLabel(resolved.privacy)
 
     return (
       <Card padding={3} border radius={2} tone={resolved.stale ? 'caution' : 'default'}>
-        <Stack space={3}>
+        <Flex direction="column" gap={3}>
           <Flex gap={3} align="flex-start">
             {thumb && (
               <img
                 src={thumb.link}
                 alt={resolved.name}
                 style={{
-                  width: '120px',
-                  height: 'auto',
-                  borderRadius: '2px',
+                  width: 160,
+                  aspectRatio: '16/9',
+                  objectFit: 'cover',
+                  borderRadius: 3,
                   flexShrink: 0,
+                  display: 'block',
+                  backgroundColor: '#000',
                 }}
               />
             )}
-            <Stack space={2} style={{flex: 1}}>
-              <Inline space={2}>
-                <Text size={1} weight="semibold">
-                  {resolved.name}
-                </Text>
-                <Badge tone={privacyTone(resolved.privacy)} fontSize={0}>
-                  {privacyLabel(resolved.privacy)}
-                </Badge>
-                {resolved.stale && (
-                  <Badge tone="critical" fontSize={0}>
-                    Stale
-                  </Badge>
-                )}
-              </Inline>
+            <Flex direction="column" gap={2} style={{flex: 1, minWidth: 0}}>
+              <Text size={1} weight="semibold" textOverflow="ellipsis" title={resolved.name}>
+                {resolved.name}
+              </Text>
+              {(privacy || resolved.stale) && (
+                <Flex gap={2} wrap="wrap">
+                  {privacy && (
+                    <Badge tone={privacyTone(resolved.privacy)} fontSize={0}>
+                      {privacy}
+                    </Badge>
+                  )}
+                  {resolved.stale && (
+                    <Badge tone="critical" fontSize={0}>
+                      Stale
+                    </Badge>
+                  )}
+                </Flex>
+              )}
               {resolved.stale && (
                 <Text size={0} muted>
                   This video was not found in the connected Vimeo account on the last sync.
@@ -217,20 +219,23 @@ export function VimeoReferenceInput(
               )}
               <Text size={0} muted>
                 ID: {resolved.vimeoId}
+                {resolved.duration !== null && resolved.duration !== undefined
+                  ? ` · ${formatDuration(resolved.duration)}`
+                  : ''}
               </Text>
-              {resolved.duration !== null && resolved.duration !== undefined && (
-                <Text size={0} muted>
-                  Duration: {formatDuration(resolved.duration)}
-                </Text>
-              )}
               {resolved.lastSynced && (
                 <Text size={0} muted>
                   Last synced: {formatDate(resolved.lastSynced)}
                 </Text>
               )}
-            </Stack>
+            </Flex>
           </Flex>
-          <Inline space={2}>
+          {refreshError && (
+            <Card padding={2} radius={2} tone="critical">
+              <Text size={0}>{refreshError}</Text>
+            </Card>
+          )}
+          <Flex gap={2} align="center" wrap="wrap">
             <Button text="Change" icon={SearchIcon} mode="ghost" onClick={handleOpen} />
             <Button
               text={refreshing ? 'Refreshing…' : 'Refresh'}
@@ -239,9 +244,8 @@ export function VimeoReferenceInput(
               disabled={refreshing}
               onClick={handleRefresh}
             />
-            {refreshing && <Spinner muted />}
             {confirmRemove ? (
-              <Inline space={2}>
+              <>
                 <Button
                   text="Confirm Remove"
                   tone="critical"
@@ -249,7 +253,7 @@ export function VimeoReferenceInput(
                   onClick={handleRemove}
                 />
                 <Button text="Cancel" mode="ghost" onClick={() => setConfirmRemove(false)} />
-              </Inline>
+              </>
             ) : (
               <Button
                 text="Remove"
@@ -259,8 +263,8 @@ export function VimeoReferenceInput(
                 onClick={() => setConfirmRemove(true)}
               />
             )}
-          </Inline>
-        </Stack>
+          </Flex>
+        </Flex>
 
         {dialogOpen && (
           <Dialog
@@ -284,7 +288,7 @@ export function VimeoReferenceInput(
 
   // Empty state
   return (
-    <Stack space={3}>
+    <Flex direction="column" gap={3}>
       <Button text="Select Video" icon={SearchIcon} tone="primary" onClick={handleOpen} />
 
       {dialogOpen && (
@@ -303,6 +307,6 @@ export function VimeoReferenceInput(
           </Box>
         </Dialog>
       )}
-    </Stack>
+    </Flex>
   )
 }
